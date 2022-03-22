@@ -5,6 +5,5 @@ C:\Users\stargirl\source\repos\my practice\my practice\obj\Debug\net48\my practi
 C:\Users\stargirl\source\repos\my practice\my practice\obj\Debug\net48\my practice.AssemblyInfo.cs
 C:\Users\stargirl\source\repos\my practice\my practice\obj\Debug\net48\my practice.exe
 C:\Users\stargirl\source\repos\my practice\my practice\obj\Debug\net48\my practice.pdb
-C:\Users\stargirl\source\repos\my practice\my practice\obj\Debug\net48\my practice.csprojAssemblyReference.cache
 C:\Users\stargirl\source\repos\my practice\my practice\bin\Debug\net48\ObjectDumping.dll
 C:\Users\stargirl\source\repos\my practice\my practice\obj\Debug\net48\my practice.csproj.CopyComplete
