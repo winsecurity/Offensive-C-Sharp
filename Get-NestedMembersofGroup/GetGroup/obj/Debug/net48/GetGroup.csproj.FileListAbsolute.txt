@@ -1,0 +1,8 @@
+C:\Users\stargirl\source\repos\GetGroup\GetGroup\bin\Debug\net48\GetGroup.exe.config
+C:\Users\stargirl\source\repos\GetGroup\GetGroup\bin\Debug\net48\GetGroup.exe
+C:\Users\stargirl\source\repos\GetGroup\GetGroup\bin\Debug\net48\GetGroup.pdb
+C:\Users\stargirl\source\repos\GetGroup\GetGroup\obj\Debug\net48\GetGroup.AssemblyInfoInputs.cache
+C:\Users\stargirl\source\repos\GetGroup\GetGroup\obj\Debug\net48\GetGroup.AssemblyInfo.cs
+C:\Users\stargirl\source\repos\GetGroup\GetGroup\obj\Debug\net48\GetGroup.exe
+C:\Users\stargirl\source\repos\GetGroup\GetGroup\obj\Debug\net48\GetGroup.pdb
+C:\Users\stargirl\source\repos\GetGroup\GetGroup\obj\Debug\net48\GetGroup.csprojAssemblyReference.cache
