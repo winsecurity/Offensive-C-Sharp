@@ -1,0 +1,8 @@
+C:\Users\stargirl\source\repos\GetUsersSPN\GetUsersSPN\obj\Debug\net48\GetUsersSPN.csprojAssemblyReference.cache
+C:\Users\stargirl\source\repos\GetUsersSPN\GetUsersSPN\obj\Debug\net48\GetUsersSPN.AssemblyInfoInputs.cache
+C:\Users\stargirl\source\repos\GetUsersSPN\GetUsersSPN\obj\Debug\net48\GetUsersSPN.AssemblyInfo.cs
+C:\Users\stargirl\source\repos\GetUsersSPN\GetUsersSPN\bin\Debug\net48\GetUsersSPN.exe.config
+C:\Users\stargirl\source\repos\GetUsersSPN\GetUsersSPN\bin\Debug\net48\GetUsersSPN.exe
+C:\Users\stargirl\source\repos\GetUsersSPN\GetUsersSPN\bin\Debug\net48\GetUsersSPN.pdb
+C:\Users\stargirl\source\repos\GetUsersSPN\GetUsersSPN\obj\Debug\net48\GetUsersSPN.exe
+C:\Users\stargirl\source\repos\GetUsersSPN\GetUsersSPN\obj\Debug\net48\GetUsersSPN.pdb
