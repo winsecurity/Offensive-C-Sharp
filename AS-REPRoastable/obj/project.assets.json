@@ -1,0 +1,106 @@
+{
+  "version": 3,
+  "targets": {
+    ".NETFramework,Version=v4.8": {
+      "ObjectDumper.NET/3.3.13": {
+        "type": "package",
+        "frameworkAssemblies": [
+          "System"
+        ],
+        "compile": {
+          "lib/net45/ObjectDumping.dll": {}
+        },
+        "runtime": {
+          "lib/net45/ObjectDumping.dll": {}
+        }
+      }
+    },
+    ".NETFramework,Version=v4.8/win7-x86": {
+      "ObjectDumper.NET/3.3.13": {
+        "type": "package",
+        "frameworkAssemblies": [
+          "System"
+        ],
+        "compile": {
+          "lib/net45/ObjectDumping.dll": {}
+        },
+        "runtime": {
+          "lib/net45/ObjectDumping.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "ObjectDumper.NET/3.3.13": {
+      "sha512": "/mnJDMCWdBDiueAQFIapEv3+5CAoER6u/ElkfBbf1iM6y4lOsaf/A9+lLeD8ORqtN/Msrqe7XeVPK/0HnXQ3PA==",
+      "type": "package",
+      "path": "objectdumper.net/3.3.13",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net45/ObjectDumping.dll",
+        "lib/netstandard1.2/ObjectDumping.dll",
+        "lib/netstandard2.0/ObjectDumping.dll",
+        "lib/netstandard2.1/ObjectDumping.dll",
+        "objectdumper.net.3.3.13.nupkg.sha512",
+        "objectdumper.net.nuspec"
+      ]
+    }
+  },
+  "projectFileDependencyGroups": {
+    ".NETFramework,Version=v4.8": [
+      "ObjectDumper.NET >= 3.3.13"
+    ]
+  },
+  "packageFolders": {
+    "C:\\Users\\stargirl\\.nuget\\packages\\": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "C:\\Users\\stargirl\\source\\repos\\my practice\\my practice\\my practice.csproj",
+      "projectName": "my practice",
+      "projectPath": "C:\\Users\\stargirl\\source\\repos\\my practice\\my practice\\my practice.csproj",
+      "packagesPath": "C:\\Users\\stargirl\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\stargirl\\source\\repos\\my practice\\my practice\\obj\\",
+      "projectStyle": "PackageReference",
+      "configFilePaths": [
+        "C:\\Users\\stargirl\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+      ],
+      "originalTargetFrameworks": [
+        "net48"
+      ],
+      "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net48": {
+          "projectReferences": {}
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      }
+    },
+    "frameworks": {
+      "net48": {
+        "dependencies": {
+          "ObjectDumper.NET": {
+            "target": "Package",
+            "version": "[3.3.13, )"
+          }
+        },
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.0.100\\RuntimeIdentifierGraph.json"
+      }
+    },
+    "runtimes": {
+      "win7-x86": {
+        "#import": []
+      }
+    }
+  }
+}
