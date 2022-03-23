@@ -1,0 +1,7 @@
+C:\Users\stargirl\source\repos\Get-Writable\Get-Writable\bin\Debug\net48\Get-Writable.exe.config
+C:\Users\stargirl\source\repos\Get-Writable\Get-Writable\bin\Debug\net48\Get-Writable.exe
+C:\Users\stargirl\source\repos\Get-Writable\Get-Writable\bin\Debug\net48\Get-Writable.pdb
+C:\Users\stargirl\source\repos\Get-Writable\Get-Writable\obj\Debug\net48\Get-Writable.AssemblyInfoInputs.cache
+C:\Users\stargirl\source\repos\Get-Writable\Get-Writable\obj\Debug\net48\Get-Writable.AssemblyInfo.cs
+C:\Users\stargirl\source\repos\Get-Writable\Get-Writable\obj\Debug\net48\Get-Writable.exe
+C:\Users\stargirl\source\repos\Get-Writable\Get-Writable\obj\Debug\net48\Get-Writable.pdb
