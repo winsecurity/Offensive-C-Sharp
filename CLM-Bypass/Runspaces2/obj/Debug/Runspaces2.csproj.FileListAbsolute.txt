@@ -5,4 +5,3 @@ C:\Users\stargirl\source\repos\Runspaces2\Runspaces2\bin\Debug\System.Management
 C:\Users\stargirl\source\repos\Runspaces2\Runspaces2\obj\Debug\Runspaces2.csproj.CopyComplete
 C:\Users\stargirl\source\repos\Runspaces2\Runspaces2\obj\Debug\Runspaces2.exe
 C:\Users\stargirl\source\repos\Runspaces2\Runspaces2\obj\Debug\Runspaces2.pdb
-C:\Users\stargirl\source\repos\Runspaces2\Runspaces2\obj\Debug\Runspaces2.csprojAssemblyReference.cache
