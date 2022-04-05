@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29318.209
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ACL101", "ACL101\ACL101.csproj", "{8298A94D-50D1-4475-BACE-0A78C1295A07}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8298A94D-50D1-4475-BACE-0A78C1295A07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8298A94D-50D1-4475-BACE-0A78C1295A07}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8298A94D-50D1-4475-BACE-0A78C1295A07}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8298A94D-50D1-4475-BACE-0A78C1295A07}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {11EBE3A2-9DB8-4DF0-92FB-39F1D66A2F75}
+	EndGlobalSection
+EndGlobal

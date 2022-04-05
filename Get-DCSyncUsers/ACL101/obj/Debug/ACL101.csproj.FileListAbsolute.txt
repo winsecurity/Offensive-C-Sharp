@@ -1,0 +1,6 @@
+C:\Users\stargirl\source\repos\ACL101\ACL101\bin\Debug\ACL101.exe.config
+C:\Users\stargirl\source\repos\ACL101\ACL101\bin\Debug\ACL101.exe
+C:\Users\stargirl\source\repos\ACL101\ACL101\bin\Debug\ACL101.pdb
+C:\Users\stargirl\source\repos\ACL101\ACL101\obj\Debug\ACL101.exe
+C:\Users\stargirl\source\repos\ACL101\ACL101\obj\Debug\ACL101.pdb
+C:\Users\stargirl\source\repos\ACL101\ACL101\obj\Debug\ACL101.csprojAssemblyReference.cache
