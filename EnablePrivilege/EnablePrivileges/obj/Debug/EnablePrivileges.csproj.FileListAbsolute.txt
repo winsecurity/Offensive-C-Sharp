@@ -1,0 +1,5 @@
+C:\Users\stargirl\source\repos\WinAPI\EnablePrivileges\EnablePrivileges\bin\Debug\EnablePrivileges.exe.config
+C:\Users\stargirl\source\repos\WinAPI\EnablePrivileges\EnablePrivileges\bin\Debug\EnablePrivileges.exe
+C:\Users\stargirl\source\repos\WinAPI\EnablePrivileges\EnablePrivileges\bin\Debug\EnablePrivileges.pdb
+C:\Users\stargirl\source\repos\WinAPI\EnablePrivileges\EnablePrivileges\obj\Debug\EnablePrivileges.exe
+C:\Users\stargirl\source\repos\WinAPI\EnablePrivileges\EnablePrivileges\obj\Debug\EnablePrivileges.pdb
