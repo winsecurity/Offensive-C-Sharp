@@ -1,0 +1,6 @@
+C:\Users\stargirl\source\repos\WinAPI\TokenInformation\TokenInformation\bin\Debug\TokenInformation.exe.config
+C:\Users\stargirl\source\repos\WinAPI\TokenInformation\TokenInformation\bin\Debug\TokenInformation.exe
+C:\Users\stargirl\source\repos\WinAPI\TokenInformation\TokenInformation\bin\Debug\TokenInformation.pdb
+C:\Users\stargirl\source\repos\WinAPI\TokenInformation\TokenInformation\obj\Debug\TokenInformation.exe
+C:\Users\stargirl\source\repos\WinAPI\TokenInformation\TokenInformation\obj\Debug\TokenInformation.pdb
+C:\Users\stargirl\source\repos\WinAPI\TokenInformation\TokenInformation\obj\Debug\TokenInformation.csprojAssemblyReference.cache

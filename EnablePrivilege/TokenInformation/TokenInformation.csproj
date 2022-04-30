@@ -4,17 +4,17 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{168FA840-D714-48B3-8445-CE176C5D08C3}</ProjectGuid>
+    <ProjectGuid>{6840AC1C-F41A-443D-895E-AA6798A239E2}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>EnablePrivileges</RootNamespace>
-    <AssemblyName>EnablePrivileges</AssemblyName>
+    <RootNamespace>TokenInformation</RootNamespace>
+    <AssemblyName>TokenInformation</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
