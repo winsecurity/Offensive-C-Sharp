@@ -425,42 +425,9 @@ namespace TokenInformation
                        );
                 Console.WriteLine("Error->{0}",Marshal.GetLastWin32Error());
 
-
-
-
             }
 
-            
-
-
-            /*TOKEN_GROUPS tg  =(TOKEN_GROUPS)Marshal.PtrToStructure(groupuser, typeof(TOKEN_GROUPS));
-            Console.WriteLine(tg.GroupCount);
-            Console.WriteLine((grouplength-Marshal.SizeOf(tg.GroupCount))/Marshal.SizeOf(typeof(SID_AND_ATTRIBUTES)));
-            // 42
-            IntPtr offset = Marshal.OffsetOf(typeof(TOKEN_GROUPS), "Groups");
-
-            int sidAndAttrSize = Marshal.SizeOf(new SID_AND_ATTRIBUTES());
-
-            for (int i = 0; i < 15; i++)
-            {
-                SID_AND_ATTRIBUTES s = (SID_AND_ATTRIBUTES)Marshal.PtrToStructure(
-                    new IntPtr(tg.Groups.ToInt64() + i*sidAndAttrSize + IntPtr.Size ),
-                    typeof(SID_AND_ATTRIBUTES)
-                    );
-                //Console.WriteLine(s.Sid);
-                IntPtr sb2 = IntPtr.Zero;
-                bool t2 = ConvertSidToStringSidW(s.Sid, ref sb2);
-
-
-                string sid2 = Marshal.PtrToStringUni(sb2);
-                Console.WriteLine(sid2);
-
-                tg.Groups += Marshal.SizeOf(typeof(SID_AND_ATTRIBUTES));
-            
-            }
-           */
-
-
+   
 
             //CloseHandle(procHandle);
             CloseHandle(tokenHandle);
