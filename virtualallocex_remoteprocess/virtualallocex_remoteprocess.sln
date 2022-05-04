@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29318.209
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "virtualallocex_remoteprocess", "virtualallocex_remoteprocess\virtualallocex_remoteprocess.csproj", "{63E342F3-25ED-4624-8E6D-1154911CDC0D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{63E342F3-25ED-4624-8E6D-1154911CDC0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63E342F3-25ED-4624-8E6D-1154911CDC0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63E342F3-25ED-4624-8E6D-1154911CDC0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63E342F3-25ED-4624-8E6D-1154911CDC0D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {01C2700A-9201-42D2-92F5-40D47BB22B6C}
+	EndGlobalSection
+EndGlobal

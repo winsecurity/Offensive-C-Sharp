@@ -1,0 +1,6 @@
+C:\Users\stargirl\source\repos\WinAPI\virtualallocex_remoteprocess\virtualallocex_remoteprocess\bin\Debug\virtualallocex_remoteprocess.exe.config
+C:\Users\stargirl\source\repos\WinAPI\virtualallocex_remoteprocess\virtualallocex_remoteprocess\bin\Debug\virtualallocex_remoteprocess.exe
+C:\Users\stargirl\source\repos\WinAPI\virtualallocex_remoteprocess\virtualallocex_remoteprocess\bin\Debug\virtualallocex_remoteprocess.pdb
+C:\Users\stargirl\source\repos\WinAPI\virtualallocex_remoteprocess\virtualallocex_remoteprocess\obj\Debug\virtualallocex_remoteprocess.exe
+C:\Users\stargirl\source\repos\WinAPI\virtualallocex_remoteprocess\virtualallocex_remoteprocess\obj\Debug\virtualallocex_remoteprocess.pdb
+C:\Users\stargirl\source\repos\WinAPI\virtualallocex_remoteprocess\virtualallocex_remoteprocess\obj\Debug\virtualallocex_remoteprocess.csprojAssemblyReference.cache
