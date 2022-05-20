@@ -16,7 +16,7 @@ namespace ADautoenum
     class Program
     {
 
-
+        public delegate string runall(string name);
         public static string GetKerberoastable(string domainname)
         {
             string res = "";
@@ -260,14 +260,26 @@ namespace ADautoenum
             Domain d = Domain.GetCurrentDomain();
             string DomainName = d.Name;
 
-            Console.WriteLine(GetKerberoastable(DomainName));
+            runall r = new runall(GetKerberoastable);
+            
+            r += GetASREPRoastable;
+            r += GetDCSyncUsers;
+            r += GetDescription;
+
+            Delegate[] d2 = r.GetInvocationList();
+            foreach(Delegate temp in d2)
+            {
+                Console.WriteLine(temp.DynamicInvoke(DomainName));
+            }
+
+            /*Console.WriteLine(GetKerberoastable(DomainName));
             Console.WriteLine();
             Console.WriteLine(GetASREPRoastable(DomainName));
             Console.WriteLine();
             
             Console.WriteLine(GetDCSyncUsers(DomainName));
             Console.WriteLine();
-            Console.WriteLine(GetDescription(DomainName));
+            Console.WriteLine(GetDescription(DomainName));*/
         }
     }
 }
