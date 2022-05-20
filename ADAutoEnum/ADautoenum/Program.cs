@@ -205,6 +205,55 @@ namespace ADautoenum
             return res;
         }
 
+        public static string GetDescription(string domainname)
+        {
+            string res = "";
+            StringWriter sw = new StringWriter();
+
+            Console.WriteLine("------Finding Description field of Users------");
+            try
+            {
+                
+                string DomainName = domainname;
+                // testing.tech69.local
+                string[] domain = DomainName.Split('.');
+                for (int i = 0; i < domain.Length; i++)
+                {
+                    domain[i] = "DC=" + domain[i];
+                }
+                string dn = String.Join(",", domain);
+
+                DirectoryEntry de = new DirectoryEntry(String.Format("LDAP://{0}", dn));
+                DirectorySearcher ds = new DirectorySearcher();
+                ds.SearchRoot = de;
+                ds.Filter = "(objectclass=user)";
+                foreach(SearchResult sr in ds.FindAll())
+                {
+                    //Console.WriteLine(sr.Properties["description"][0]);
+                    try
+                    {
+                        string description = sr.GetDirectoryEntry().Properties["description"][0].ToString();
+                        if (description.Length > 0)
+                        {
+                            sw.WriteLine("Name: {0}",sr.Properties["samaccountname"][0]);
+                            sw.WriteLine("Description: {0}",description);
+                        }
+                    }
+                    catch { }
+                }
+
+                res = sw.ToString();
+
+            }
+            catch(Exception e)
+            {
+                res = e.Message;
+            }
+
+
+                return res;
+        }
+
         static void Main(string[] args)
         {
 
@@ -215,8 +264,10 @@ namespace ADautoenum
             Console.WriteLine();
             Console.WriteLine(GetASREPRoastable(DomainName));
             Console.WriteLine();
-
+            
             Console.WriteLine(GetDCSyncUsers(DomainName));
+            Console.WriteLine();
+            Console.WriteLine(GetDescription(DomainName));
         }
     }
 }
