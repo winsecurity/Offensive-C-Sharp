@@ -335,6 +335,102 @@ namespace ADautoenum
             return res;
 
         }
+        
+        
+        public static string GetConstrainedDelegation(string domainname)
+        {
+            string res = "";
+
+            StringWriter sw = new StringWriter();
+            try
+            {
+
+                List<string> l = new List<string>();
+                l.Add(""); l.Add("ACCOUNTDISABLE"); l.Add(""); l.Add("HOMEDIR_REQUIRED");
+                l.Add("LOCKOUT"); l.Add("PASSWD_NOTREQD"); l.Add("PASSWD_CANT_CHANGE");
+                l.Add("ENCRYPTED_TEXT_PWD_ALLOWED"); l.Add("TEMP_DUPLICATE_ACCOUNT");
+                l.Add("NORMAL_ACCOUNT"); l.Add(""); l.Add("INTERDOMAIN_TRUST_ACCOUNT");
+                l.Add("WORKSTATION_TRUST_ACCOUNT"); l.Add("SERVER_TRUST_ACCOUNT"); l.Add(""); l.Add("");
+                l.Add("DONT_EXPIRE_PASSWORD"); l.Add("MNS_LOGON_ACCOUNT");
+                l.Add("SMARTCARD_REQUIRED"); l.Add("TRUSTED_FOR_DELEGATION");
+                l.Add("NOT_DELEGATED"); l.Add("USE_DES_KEY_ONLY");
+                l.Add("DONT_REQ_PREAUTH"); l.Add("PASSWORD_EXPIRED");
+                l.Add("TRUSTED_TO_AUTH_FOR_DELEGATION");
+
+                sw.WriteLine("------Finding Constrained Delegation Accounts------");
+                string DomainName = domainname;
+                // testing.tech69.local
+                string[] domain = DomainName.Split('.');
+                for (int i = 0; i < domain.Length; i++)
+                {
+                    domain[i] = "DC=" + domain[i];
+                }
+                string dn = String.Join(",", domain);
+
+                DirectoryEntry de = new DirectoryEntry(String.Format("LDAP://{0}", dn));
+                DirectorySearcher ds = new DirectorySearcher();
+                ds.SearchRoot = de;
+                ds.Filter = "(objectclass=user)";
+
+                foreach (SearchResult sr in ds.FindAll())
+                {
+                    try
+                    {
+                        if (sr.Properties["msds-allowedtodelegateto"][0].ToString() != null)
+                        {
+
+                            sw.WriteLine("Name: {0}", sr.Properties["samaccountname"][0]);
+                            sw.Write("msds-alloweddelegateto: ");
+                            for (int i = 0; i < sr.Properties["msds-allowedtodelegateto"].Count; i++)
+                            {
+                                sw.Write(sr.Properties["msds-allowedtodelegateto"][i] + ",");
+                            }
+
+                            int uac = Convert.ToInt32(sr.Properties["useraccountcontrol"][0]);
+                            string uac_binary = Convert.ToString(uac, 2);
+                            List<string> flags = new List<string>();
+                            
+                            for (int i = 0; i < uac_binary.Length; i++)
+                            {
+                                int result2 = uac & Convert.ToInt32(Math.Pow(2, i));
+                                if (result2 != 0)
+                                {
+                                    //Console.WriteLine(l[i]);
+                                    flags.Add(l[i]);
+                                }
+
+                            }
+                            foreach (string temp in flags)
+                            {
+                                if (temp.ToLower().Contains("deleg"))
+                                {
+                                  
+                                  
+
+                                    foreach (string temp2 in flags)
+                                    {
+                                        sw.WriteLine(temp2);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch(Exception e)
+                    {
+                        //sw.WriteLine(e.Message);
+                    }
+                }
+                res = sw.ToString();
+            }
+            catch(Exception e)
+            {
+                res = e.Message;
+            }
+
+            return res;
+
+        }
+        
         static void Main(string[] args)
         {
 
@@ -347,6 +443,8 @@ namespace ADautoenum
             r += GetDCSyncUsers;
             r += GetDescription;
             r += GetUnconstrainedDelegation;
+            r += GetConstrainedDelegation;
+
             Delegate[] d2 = r.GetInvocationList();
             foreach(Delegate temp in d2)
             {
