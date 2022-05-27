@@ -3,3 +3,4 @@ C:\Users\stargirl\source\repos\ADautoenum\ADautoenum\bin\Debug\ADautoenum.exe
 C:\Users\stargirl\source\repos\ADautoenum\ADautoenum\bin\Debug\ADautoenum.pdb
 C:\Users\stargirl\source\repos\ADautoenum\ADautoenum\obj\Debug\ADautoenum.exe
 C:\Users\stargirl\source\repos\ADautoenum\ADautoenum\obj\Debug\ADautoenum.pdb
+C:\Users\stargirl\source\repos\ADautoenum\ADautoenum\obj\Debug\ADautoenum.csprojAssemblyReference.cache

