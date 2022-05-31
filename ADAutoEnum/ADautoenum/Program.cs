@@ -210,9 +210,9 @@ namespace ADautoenum
 
                     AuthorizationRuleCollection arc=  temp.ObjectSecurity.GetAccessRules(true,true,typeof(NTAccount));
 
-                    foreach(ActiveDirectoryAccessRule ar in arc)
+                    foreach (ActiveDirectoryAccessRule ar in arc)
                     {
-                        
+                        if (dn.Contains(temp.Name.ToString())) { 
                             foreach (DictionaryEntry dic in ht)
                             {
                                 if (dic.Value.ToString() == ar.ObjectType.ToString())
@@ -222,6 +222,7 @@ namespace ADautoenum
                                     sw.WriteLine(dic.Key.ToString());
                                 }
                             }
+                    }
                         
                     }
 
@@ -706,13 +707,19 @@ namespace ADautoenum
             //r += GetConstrainedDelegation;
             //r += GetResourceDelegation;
 
-            
+
+            Forest f = Forest.GetCurrentForest();
+            DomainCollection domains = f.Domains;
+
             Delegate[] d2 = r.GetInvocationList();
-            foreach(Delegate temp in d2)
+
+            foreach (Domain domain in domains)
             {
-                Console.WriteLine(temp.DynamicInvoke(DomainName));
+                foreach (Delegate temp in d2)
+                {
+                    Console.WriteLine(temp.DynamicInvoke(domain.Name));
+                }
             }
-            
             /*Console.WriteLine(GetKerberoastable(DomainName));
             Console.WriteLine();
             Console.WriteLine(GetASREPRoastable(DomainName));
