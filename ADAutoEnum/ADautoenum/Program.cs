@@ -229,10 +229,7 @@ namespace ADautoenum
 
                         }
                     }
-                    catch(Exception e)
-                    {
-
-                    }
+                    catch { }
 
                 }
 
@@ -240,7 +237,7 @@ namespace ADautoenum
             }
             catch (Exception e)
             {
-                res = e.Message;
+               
             }
             return res;
         }
