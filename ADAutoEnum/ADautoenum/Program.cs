@@ -709,8 +709,8 @@ namespace ADautoenum
             r += GetDCSyncUsers;
             r += GetDescription;
             r += GetUnconstrainedDelegation;
-            //r += GetConstrainedDelegation;
-            //r += GetResourceDelegation;
+            r += GetConstrainedDelegation;
+            r += GetResourceDelegation;
 
 
             Forest f = Forest.GetCurrentForest();
