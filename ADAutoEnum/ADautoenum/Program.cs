@@ -212,8 +212,7 @@ namespace ADautoenum
 
                     foreach(ActiveDirectoryAccessRule ar in arc)
                     {
-                        if (dn.Contains(temp.Name.ToString()))
-                        {
+                        
                             foreach (DictionaryEntry dic in ht)
                             {
                                 if (dic.Value.ToString() == ar.ObjectType.ToString())
@@ -223,7 +222,7 @@ namespace ADautoenum
                                     sw.WriteLine(dic.Key.ToString());
                                 }
                             }
-                        }
+                        
                     }
 
                 }
@@ -704,7 +703,7 @@ namespace ADautoenum
             r += GetDCSyncUsers;
             r += GetDescription;
             r += GetUnconstrainedDelegation;
-            r += GetConstrainedDelegation;
+            //r += GetConstrainedDelegation;
             //r += GetResourceDelegation;
 
             
