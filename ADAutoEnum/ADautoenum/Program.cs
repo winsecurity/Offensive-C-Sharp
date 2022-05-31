@@ -206,24 +206,32 @@ namespace ADautoenum
 
                 foreach(SearchResult sr in ds.FindAll())
                 {
-                    DirectoryEntry temp = sr.GetDirectoryEntry();
-
-                    AuthorizationRuleCollection arc=  temp.ObjectSecurity.GetAccessRules(true,true,typeof(NTAccount));
-
-                    foreach (ActiveDirectoryAccessRule ar in arc)
+                    try
                     {
-                        if (dn.Contains(temp.Name.ToString())) { 
-                            foreach (DictionaryEntry dic in ht)
+                        DirectoryEntry temp = sr.GetDirectoryEntry();
+
+                        AuthorizationRuleCollection arc = temp.ObjectSecurity.GetAccessRules(true, true, typeof(NTAccount));
+
+                        foreach (ActiveDirectoryAccessRule ar in arc)
+                        {
+                            if (dn.Contains(temp.Name.ToString()))
                             {
-                                if (dic.Value.ToString() == ar.ObjectType.ToString())
+                                foreach (DictionaryEntry dic in ht)
                                 {
-                                    sw.WriteLine(ar.IdentityReference);
-                                    sw.WriteLine(ar.ObjectType);
-                                    sw.WriteLine(dic.Key.ToString());
+                                    if (dic.Value.ToString() == ar.ObjectType.ToString())
+                                    {
+                                        sw.WriteLine(ar.IdentityReference);
+                                        sw.WriteLine(ar.ObjectType);
+                                        sw.WriteLine(dic.Key.ToString());
+                                    }
                                 }
                             }
+
+                        }
                     }
-                        
+                    catch(Exception e)
+                    {
+
                     }
 
                 }
