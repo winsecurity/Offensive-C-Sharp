@@ -1,0 +1,5 @@
+C:\Users\stargirl\source\repos\WinAPI\LSAAPI\LsaEnumerateLoggedonSessions\LsaEnumerateLoggedonSessions\bin\Debug\LsaEnumerateLoggedonSessions.exe.config
+C:\Users\stargirl\source\repos\WinAPI\LSAAPI\LsaEnumerateLoggedonSessions\LsaEnumerateLoggedonSessions\bin\Debug\LsaEnumerateLoggedonSessions.exe
+C:\Users\stargirl\source\repos\WinAPI\LSAAPI\LsaEnumerateLoggedonSessions\LsaEnumerateLoggedonSessions\bin\Debug\LsaEnumerateLoggedonSessions.pdb
+C:\Users\stargirl\source\repos\WinAPI\LSAAPI\LsaEnumerateLoggedonSessions\LsaEnumerateLoggedonSessions\obj\Debug\LsaEnumerateLoggedonSessions.exe
+C:\Users\stargirl\source\repos\WinAPI\LSAAPI\LsaEnumerateLoggedonSessions\LsaEnumerateLoggedonSessions\obj\Debug\LsaEnumerateLoggedonSessions.pdb
