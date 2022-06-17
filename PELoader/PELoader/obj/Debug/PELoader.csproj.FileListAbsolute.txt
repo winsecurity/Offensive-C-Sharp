@@ -1,0 +1,6 @@
+C:\Users\stargirl\source\repos\WinAPI\PELoader\PELoader\bin\Debug\PELoader.exe.config
+C:\Users\stargirl\source\repos\WinAPI\PELoader\PELoader\bin\Debug\PELoader.exe
+C:\Users\stargirl\source\repos\WinAPI\PELoader\PELoader\bin\Debug\PELoader.pdb
+C:\Users\stargirl\source\repos\WinAPI\PELoader\PELoader\obj\Debug\PELoader.exe
+C:\Users\stargirl\source\repos\WinAPI\PELoader\PELoader\obj\Debug\PELoader.pdb
+C:\Users\stargirl\source\repos\WinAPI\PELoader\PELoader\obj\Debug\PELoader.csprojAssemblyReference.cache
