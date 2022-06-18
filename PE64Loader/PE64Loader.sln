@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29318.209
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PE64Loader", "PE64Loader\PE64Loader.csproj", "{C22B5D3F-F157-44EE-A3C2-94BDBC8BDD07}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C22B5D3F-F157-44EE-A3C2-94BDBC8BDD07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C22B5D3F-F157-44EE-A3C2-94BDBC8BDD07}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C22B5D3F-F157-44EE-A3C2-94BDBC8BDD07}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C22B5D3F-F157-44EE-A3C2-94BDBC8BDD07}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {ECE60869-C952-4080-9274-20E9E27DB656}
+	EndGlobalSection
+EndGlobal
