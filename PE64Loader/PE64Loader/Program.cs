@@ -558,6 +558,11 @@ namespace PE64Loader
             uint dwCreationFlags,
             ref uint lpThreadId);
 
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern UInt32 WaitForSingleObject(IntPtr hHandle, UInt32 dwMilliseconds);
+
+
         public static string CheckBitVersion(string filepath)
         {
             string bit32 = "32bit";
@@ -653,10 +658,10 @@ namespace PE64Loader
 
         static void Main(string[] args)
         {
-
+          
             string exe_path;
 
-            exe_path = @"D:\red teaming tools\calc2.exe";
+            exe_path = args[0];
 
             string bit = CheckBitVersion(exe_path);
 
@@ -729,7 +734,7 @@ namespace PE64Loader
                     temp[j] = rawfile[j + sh[i].PointerToRawData];
                     //Console.Write(temp[j].ToString("X")+",");
                 }
-                Console.WriteLine((baseaddress + (int)sh[i].VirtualAddress).ToString("X"));
+               // Console.WriteLine((baseaddress + (int)sh[i].VirtualAddress).ToString("X"));
                 Marshal.Copy(temp, 0, baseaddress +(int) sh[i].VirtualAddress, temp.Length);
 
             }
@@ -739,57 +744,62 @@ namespace PE64Loader
 
 
             #region Fixing IATs
-
-            IntPtr importptr = (IntPtr) baseaddress+(int) ntheader.OptionalHeader.ImportTable.VirtualAddress;
-
-            IMAGE_IMPORT_DESCRIPTOR firstimport = (IMAGE_IMPORT_DESCRIPTOR) Marshal.PtrToStructure(importptr, typeof(IMAGE_IMPORT_DESCRIPTOR));
-
-            while (firstimport.Name != 0)
+            //Console.WriteLine("import directory size: {0}", ntheader.OptionalHeader.ImportTable.Size);
+            // fix IAT's only if import directory is not zero
+            if (ntheader.OptionalHeader.ImportTable.Size > 0)
             {
+                IntPtr importptr = (IntPtr) baseaddress+(int) ntheader.OptionalHeader.ImportTable.VirtualAddress;
 
-                string dllname = Marshal.PtrToStringAnsi(baseaddress + (int)firstimport.Name);
-                Console.WriteLine("Dll name: {0}",dllname);
+            
+                IMAGE_IMPORT_DESCRIPTOR firstimport = (IMAGE_IMPORT_DESCRIPTOR)Marshal.PtrToStructure(importptr, typeof(IMAGE_IMPORT_DESCRIPTOR));
 
-                IntPtr dllhandle = LoadLibrary(dllname);
-                Console.WriteLine(GetLastError());
-                int errorcode = GetLastError();
-
-                IntPtr originalfirstthunk = baseaddress + (int)firstimport.OriginalFirstThunk;
-
-                IntPtr firstthunkptr = baseaddress + (int)firstimport.FirstThunk;
-
-                //IMAGE_THUNK_DATA64 firstthunk = (IMAGE_THUNK_DATA64)Marshal.PtrToStructure(firstthunkptr, typeof(IMAGE_THUNK_DATA64));
-                IMAGE_THUNK_DATA64 thunk1 = (IMAGE_THUNK_DATA64)Marshal.PtrToStructure(originalfirstthunk, typeof(IMAGE_THUNK_DATA64));
-
-                while (thunk1.Function != 0)
+                while (firstimport.Name != 0)
                 {
-                    IntPtr name1 = baseaddress + (int)thunk1.Function;
 
-                    string functionname = Marshal.PtrToStringAnsi(name1 + 2);
-                    Console.WriteLine(functionname);
+                    string dllname = Marshal.PtrToStringAnsi(baseaddress + (int)firstimport.Name);
+                    Console.WriteLine("Dll name: {0}", dllname);
 
-                    if (errorcode == 0)
+                    IntPtr dllhandle = LoadLibrary(dllname);
+                    Console.WriteLine(GetLastError());
+                    int errorcode = GetLastError();
+
+                    IntPtr originalfirstthunk = baseaddress + (int)firstimport.OriginalFirstThunk;
+
+                    IntPtr firstthunkptr = baseaddress + (int)firstimport.FirstThunk;
+
+                    //IMAGE_THUNK_DATA64 firstthunk = (IMAGE_THUNK_DATA64)Marshal.PtrToStructure(firstthunkptr, typeof(IMAGE_THUNK_DATA64));
+                    IMAGE_THUNK_DATA64 thunk1 = (IMAGE_THUNK_DATA64)Marshal.PtrToStructure(originalfirstthunk, typeof(IMAGE_THUNK_DATA64));
+
+                    while (thunk1.Function != 0)
                     {
-                        IntPtr functionaddress = GetProcAddress(dllhandle, functionname);
-                        if (GetLastError() == 0)
+                        IntPtr name1 = baseaddress + (int)thunk1.Function;
+
+                        string functionname = Marshal.PtrToStringAnsi(name1 + 2);
+                        Console.WriteLine(functionname);
+
+                        if (errorcode == 0)
                         {
-                            Console.WriteLine("Function address: {0}", functionaddress.ToString("X"));
+                            IntPtr functionaddress = GetProcAddress(dllhandle, functionname);
+                            if (GetLastError() == 0)
+                            {
+                                Console.WriteLine("Function address: {0}", functionaddress.ToString("X"));
 
-                            Marshal.WriteInt64(firstthunkptr, functionaddress.ToInt64());
+                                Marshal.WriteInt64(firstthunkptr, functionaddress.ToInt64());
 
+                            }
                         }
+                        originalfirstthunk += Marshal.SizeOf(typeof(IMAGE_THUNK_DATA64));
+                        thunk1 = (IMAGE_THUNK_DATA64)Marshal.PtrToStructure(originalfirstthunk, typeof(IMAGE_THUNK_DATA64));
+
                     }
-                    originalfirstthunk += Marshal.SizeOf(typeof(IMAGE_THUNK_DATA64));
-                    thunk1 = (IMAGE_THUNK_DATA64)Marshal.PtrToStructure(originalfirstthunk, typeof(IMAGE_THUNK_DATA64));
+                    firstthunkptr += 4;
+                    importptr += Marshal.SizeOf(typeof(IMAGE_IMPORT_DESCRIPTOR));
+                    firstimport = (IMAGE_IMPORT_DESCRIPTOR)Marshal.PtrToStructure(importptr, typeof(IMAGE_IMPORT_DESCRIPTOR));
+
+                    FreeLibrary(dllhandle);
 
                 }
-                firstthunkptr += 4;
-                importptr += Marshal.SizeOf(typeof(IMAGE_IMPORT_DESCRIPTOR));
-                firstimport = (IMAGE_IMPORT_DESCRIPTOR)Marshal.PtrToStructure(importptr, typeof(IMAGE_IMPORT_DESCRIPTOR));
-           
-            
             }
-            
             #endregion
 
 
@@ -807,12 +817,13 @@ namespace PE64Loader
             Console.WriteLine("Thread id: {0}", threadid);
              Console.WriteLine(GetLastError());
 
+            WaitForSingleObject(threadhandle, 10000);
 
             VirtualFree(baseaddress, 0, 0x00008000);
             br.Close();
             fs.Close();
 
-            Console.ReadKey();
+           // Console.ReadKey();
         }
     }
 }
