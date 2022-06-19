@@ -563,6 +563,17 @@ namespace PE64Loader
         static extern UInt32 WaitForSingleObject(IntPtr hHandle, UInt32 dwMilliseconds);
 
 
+        [StructLayout(LayoutKind.Explicit)]
+        public struct IMAGE_BASE_RELOCATION
+        {
+            [FieldOffset(0)]
+            public UInt32 pagerva;
+
+            [FieldOffset(4)]
+            public UInt32 size;
+        }
+
+
         public static string CheckBitVersion(string filepath)
         {
             string bit32 = "32bit";
@@ -656,173 +667,259 @@ namespace PE64Loader
             return size;
         }
 
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
-          
-            string exe_path;
 
-            exe_path = args[0];
+            /*
+             * #define IMAGE_ORDINAL_FLAG64 0x8000000000000000
+                #define IMAGE_ORDINAL_FLAG32 0x80000000
+                #define IMAGE_ORDINAL64(Ordinal) (Ordinal & 0xffff)
+                #define IMAGE_ORDINAL32(Ordinal) (Ordinal & 0xffff)
+                #define IMAGE_SNAP_BY_ORDINAL64(Ordinal) ((Ordinal & IMAGE_ORDINAL_FLAG64) != 0)
+                #define IMAGE_SNAP_BY_ORDINAL32(Ordinal) ((Ordinal & IMAGE_ORDINAL_FLAG32) != 0)
+             */
 
-            string bit = CheckBitVersion(exe_path);
-
-            Console.WriteLine(bit);
-
-            if (bit != "64bit")
+            try
             {
-                Environment.Exit(0);
-            }
+                string exe_path;
 
-            byte[] rawfile = File.ReadAllBytes(exe_path);
+                exe_path = args[0];
 
-            FileStream fs = File.OpenRead(exe_path);
-            BinaryReader br = new BinaryReader(fs);
+                string bit = CheckBitVersion(exe_path);
 
+                Console.WriteLine(bit);
 
-            int headerssize = GetSizeofHeaders(rawfile);
-
-            int imagesize = GetImageSize(rawfile);
-
-
-            IntPtr baseaddress = VirtualAlloc(IntPtr.Zero, imagesize, 0x00001000, 0x40);
-
-            Console.WriteLine("Memory allocated at: {0}",baseaddress.ToString("X2"));
-
-
-            Marshal.Copy(rawfile, 0, baseaddress, headerssize);
-
-
-
-            #region parsingheaders and mapping sections
-            // parsing headers
-
-            IMAGE_DOS_HEADER dosheader = (IMAGE_DOS_HEADER)Marshal.PtrToStructure(baseaddress, typeof(IMAGE_DOS_HEADER));
-
-            IMAGE_NT_HEADERS64 ntheader = new IMAGE_NT_HEADERS64();
-
-            ntheader.Signature = (uint)Marshal.ReadInt32(baseaddress + dosheader.e_lfanew);
-
-            ntheader.FileHeader = (IMAGE_FILE_HEADER) Marshal.PtrToStructure(baseaddress + dosheader.e_lfanew + 4, typeof(IMAGE_FILE_HEADER));
-
-            ntheader.OptionalHeader = (IMAGE_OPTIONAL_HEADER64) Marshal.PtrToStructure(baseaddress + dosheader.e_lfanew + 24, typeof(IMAGE_OPTIONAL_HEADER64));
-
-            Console.WriteLine(ntheader.OptionalHeader.ImageBase.ToString("X2"));
-            Console.WriteLine(ntheader.OptionalHeader.AddressOfEntryPoint.ToString("X2"));
-
-            IMAGE_SECTION_HEADER[] sh = new IMAGE_SECTION_HEADER[ntheader.FileHeader.NumberOfSections];
-
-            for(int i = 0; i < ntheader.FileHeader.NumberOfSections; i++)
-            {
-
-                sh[i] = (IMAGE_SECTION_HEADER)Marshal.PtrToStructure((baseaddress + dosheader.e_lfanew + 24 + Marshal.SizeOf(ntheader.OptionalHeader)) + (i * Marshal.SizeOf(typeof(IMAGE_SECTION_HEADER))),typeof(IMAGE_SECTION_HEADER));
-                Console.WriteLine("Name: {0}",new string(sh[i].Name));
-                Console.WriteLine("Virtual Address: {0}",sh[i].VirtualAddress.ToString("X"));
-                Console.WriteLine("Raw offset: {0}",sh[i].PointerToRawData.ToString("X"));
-                Console.WriteLine("Size of raw data: {0}",sh[i].SizeOfRawData.ToString("X"));
-                Console.WriteLine("Virtual Size: {0}",sh[i].VirtualSize.ToString("X"));
-            }
-
-            // mapping sections to memory
-            for(int i = 0; i < sh.Length; i++)
-            {
-
-                uint rawoffset = sh[i].PointerToRawData;
-                Console.WriteLine(rawoffset.ToString("X"));
-                byte[] temp = new byte[sh[i].VirtualSize];
-
-                for(int j = 0; j < temp.Length; j++)
+                if (bit != "64bit")
                 {
-                    temp[j] = rawfile[j + sh[i].PointerToRawData];
-                    //Console.Write(temp[j].ToString("X")+",");
+                    Environment.Exit(0);
                 }
-               // Console.WriteLine((baseaddress + (int)sh[i].VirtualAddress).ToString("X"));
-                Marshal.Copy(temp, 0, baseaddress +(int) sh[i].VirtualAddress, temp.Length);
 
-            }
+                byte[] rawfile = File.ReadAllBytes(exe_path);
 
-
-            #endregion
+                FileStream fs = File.OpenRead(exe_path);
+                BinaryReader br = new BinaryReader(fs);
 
 
-            #region Fixing IATs
-            //Console.WriteLine("import directory size: {0}", ntheader.OptionalHeader.ImportTable.Size);
-            // fix IAT's only if import directory is not zero
-            if (ntheader.OptionalHeader.ImportTable.Size > 0)
-            {
-                IntPtr importptr = (IntPtr) baseaddress+(int) ntheader.OptionalHeader.ImportTable.VirtualAddress;
+                int headerssize = GetSizeofHeaders(rawfile);
 
-            
-                IMAGE_IMPORT_DESCRIPTOR firstimport = (IMAGE_IMPORT_DESCRIPTOR)Marshal.PtrToStructure(importptr, typeof(IMAGE_IMPORT_DESCRIPTOR));
+                int imagesize = GetImageSize(rawfile);
 
-                while (firstimport.Name != 0)
+
+                IntPtr baseaddress = VirtualAlloc(IntPtr.Zero, imagesize, 0x00001000, 0x40);
+
+                Console.WriteLine("Memory allocated at: {0}", baseaddress.ToString("X2"));
+
+
+                Marshal.Copy(rawfile, 0, baseaddress, headerssize);
+
+
+
+                #region parsingheaders and mapping sections
+                // parsing headers
+
+                IMAGE_DOS_HEADER dosheader = (IMAGE_DOS_HEADER)Marshal.PtrToStructure(baseaddress, typeof(IMAGE_DOS_HEADER));
+
+                IMAGE_NT_HEADERS64 ntheader = new IMAGE_NT_HEADERS64();
+
+                ntheader.Signature = (uint)Marshal.ReadInt32(baseaddress + dosheader.e_lfanew);
+
+                ntheader.FileHeader = (IMAGE_FILE_HEADER)Marshal.PtrToStructure(baseaddress + dosheader.e_lfanew + 4, typeof(IMAGE_FILE_HEADER));
+
+                ntheader.OptionalHeader = (IMAGE_OPTIONAL_HEADER64)Marshal.PtrToStructure(baseaddress + dosheader.e_lfanew + 24, typeof(IMAGE_OPTIONAL_HEADER64));
+
+                Console.WriteLine(ntheader.OptionalHeader.ImageBase.ToString("X2"));
+                Console.WriteLine(ntheader.OptionalHeader.AddressOfEntryPoint.ToString("X2"));
+
+                IMAGE_SECTION_HEADER[] sh = new IMAGE_SECTION_HEADER[ntheader.FileHeader.NumberOfSections];
+
+                for (int i = 0; i < ntheader.FileHeader.NumberOfSections; i++)
                 {
 
-                    string dllname = Marshal.PtrToStringAnsi(baseaddress + (int)firstimport.Name);
-                    Console.WriteLine("Dll name: {0}", dllname);
+                    sh[i] = (IMAGE_SECTION_HEADER)Marshal.PtrToStructure((baseaddress + dosheader.e_lfanew + 24 + Marshal.SizeOf(ntheader.OptionalHeader)) + (i * Marshal.SizeOf(typeof(IMAGE_SECTION_HEADER))), typeof(IMAGE_SECTION_HEADER));
+                    Console.WriteLine("Name: {0}", new string(sh[i].Name));
+                    Console.WriteLine("Virtual Address: {0}", sh[i].VirtualAddress.ToString("X"));
+                    Console.WriteLine("Raw offset: {0}", sh[i].PointerToRawData.ToString("X"));
+                    Console.WriteLine("Size of raw data: {0}", sh[i].SizeOfRawData.ToString("X"));
+                    Console.WriteLine("Virtual Size: {0}", sh[i].VirtualSize.ToString("X"));
+                }
 
-                    IntPtr dllhandle = LoadLibrary(dllname);
-                    Console.WriteLine(GetLastError());
-                    int errorcode = GetLastError();
-
-                    IntPtr originalfirstthunk = baseaddress + (int)firstimport.OriginalFirstThunk;
-
-                    IntPtr firstthunkptr = baseaddress + (int)firstimport.FirstThunk;
-
-                    //IMAGE_THUNK_DATA64 firstthunk = (IMAGE_THUNK_DATA64)Marshal.PtrToStructure(firstthunkptr, typeof(IMAGE_THUNK_DATA64));
-                    IMAGE_THUNK_DATA64 thunk1 = (IMAGE_THUNK_DATA64)Marshal.PtrToStructure(originalfirstthunk, typeof(IMAGE_THUNK_DATA64));
-
-                    while (thunk1.Function != 0)
+                // mapping sections to memory
+                for (int i = 0; i < sh.Length; i++)
+                {
+                    if (sh[i].SizeOfRawData > 0)
                     {
-                        IntPtr name1 = baseaddress + (int)thunk1.Function;
+                        uint rawoffset = sh[i].PointerToRawData;
+                        Console.WriteLine(rawoffset.ToString("X"));
+                        byte[] temp = new byte[sh[i].VirtualSize];
 
-                        string functionname = Marshal.PtrToStringAnsi(name1 + 2);
-                        Console.WriteLine(functionname);
-
-                        if (errorcode == 0)
+                        for (int j = 0; j < temp.Length; j++)
                         {
-                            IntPtr functionaddress = GetProcAddress(dllhandle, functionname);
-                            if (GetLastError() == 0)
-                            {
-                                Console.WriteLine("Function address: {0}", functionaddress.ToString("X"));
-
-                                Marshal.WriteInt64(firstthunkptr, functionaddress.ToInt64());
-
-                            }
+                            temp[j] = rawfile[j + sh[i].PointerToRawData];
+                            //Console.Write(temp[j].ToString("X")+",");
                         }
-                        originalfirstthunk += Marshal.SizeOf(typeof(IMAGE_THUNK_DATA64));
-                        thunk1 = (IMAGE_THUNK_DATA64)Marshal.PtrToStructure(originalfirstthunk, typeof(IMAGE_THUNK_DATA64));
+                        // Console.WriteLine((baseaddress + (int)sh[i].VirtualAddress).ToString("X"));
+                        Marshal.Copy(temp, 0, baseaddress + (int)sh[i].VirtualAddress, temp.Length);
+                    }
+                }
+
+
+                #endregion
+
+
+                List<IntPtr> handles = new List<IntPtr>();
+
+                #region Fixing IATs
+                //Console.WriteLine("import directory size: {0}", ntheader.OptionalHeader.ImportTable.Size);
+                // fix IAT's only if import directory is not zero
+                if (ntheader.OptionalHeader.ImportTable.Size > 0)
+                {
+                    IntPtr importptr = (IntPtr)baseaddress + (int)ntheader.OptionalHeader.ImportTable.VirtualAddress;
+
+
+                    IMAGE_IMPORT_DESCRIPTOR firstimport = (IMAGE_IMPORT_DESCRIPTOR)Marshal.PtrToStructure(importptr, typeof(IMAGE_IMPORT_DESCRIPTOR));
+
+                    while (firstimport.Name != 0)
+                    {
+
+                        string dllname = Marshal.PtrToStringAnsi(baseaddress + (int)firstimport.Name);
+                        Console.WriteLine("Dll name: {0}", dllname);
+
+                        IntPtr dllhandle = LoadLibrary(dllname);
+
+                        Console.WriteLine(GetLastError());
+                        int errorcode = GetLastError();
+
+                        IntPtr originalfirstthunk = baseaddress + (int)firstimport.OriginalFirstThunk;
+
+                        IntPtr firstthunkptr = baseaddress + (int)firstimport.FirstThunk;
+
+                        //IMAGE_THUNK_DATA64 firstthunk = (IMAGE_THUNK_DATA64)Marshal.PtrToStructure(firstthunkptr, typeof(IMAGE_THUNK_DATA64));
+                        IMAGE_THUNK_DATA64 thunk1 = (IMAGE_THUNK_DATA64)Marshal.PtrToStructure(originalfirstthunk, typeof(IMAGE_THUNK_DATA64));
+
+                        while (thunk1.Function != 0)
+                        {
+                            IntPtr name1 = baseaddress + (int)thunk1.Function;
+
+                            string functionname = Marshal.PtrToStringAnsi(name1 + 2);
+                            Console.WriteLine(functionname);
+
+                            if (errorcode == 0)
+                            {
+                                IntPtr functionaddress = GetProcAddress(dllhandle, functionname);
+                                if (GetLastError() == 0)
+                                {
+                                    handles.Add(dllhandle);
+                                    Console.WriteLine("Function address: {0}", functionaddress.ToString("X"));
+
+                                    Marshal.WriteInt64(firstthunkptr, functionaddress.ToInt64());
+
+                                }
+                            }
+                            originalfirstthunk += Marshal.SizeOf(typeof(IMAGE_THUNK_DATA64));
+                            thunk1 = (IMAGE_THUNK_DATA64)Marshal.PtrToStructure(originalfirstthunk, typeof(IMAGE_THUNK_DATA64));
+
+                        }
+                        firstthunkptr += 4;
+                        importptr += Marshal.SizeOf(typeof(IMAGE_IMPORT_DESCRIPTOR));
+                        firstimport = (IMAGE_IMPORT_DESCRIPTOR)Marshal.PtrToStructure(importptr, typeof(IMAGE_IMPORT_DESCRIPTOR));
+
+                       
 
                     }
-                    firstthunkptr += 4;
-                    importptr += Marshal.SizeOf(typeof(IMAGE_IMPORT_DESCRIPTOR));
-                    firstimport = (IMAGE_IMPORT_DESCRIPTOR)Marshal.PtrToStructure(importptr, typeof(IMAGE_IMPORT_DESCRIPTOR));
+                }
+                #endregion
 
-                    FreeLibrary(dllhandle);
+
+
+                #region fixing base relocations
+
+                ulong delta = ((ulong)baseaddress.ToInt64()) - ntheader.OptionalHeader.ImageBase;
+
+                Console.WriteLine("Expected ImageBase: {0}",ntheader.OptionalHeader.ImageBase.ToString("X"));
+                Console.WriteLine("Loaded ImageBase: {0}",baseaddress.ToString("X"));
+                Console.WriteLine("Delta: {0}",delta.ToString("X") );
+
+                IntPtr firstreloc = baseaddress + (int)ntheader.OptionalHeader.BaseRelocationTable.VirtualAddress;
+                uint allrelocsize = ntheader.OptionalHeader.BaseRelocationTable.Size;
+
+                IMAGE_BASE_RELOCATION reloc1 = (IMAGE_BASE_RELOCATION) Marshal.PtrToStructure(firstreloc, typeof(IMAGE_BASE_RELOCATION));
+
+                while (reloc1.pagerva != 0)
+                {
+
+                    Console.WriteLine("RVA: {0}",reloc1.pagerva.ToString("X"));
+                    Console.WriteLine("size: {0}",reloc1.size.ToString("X"));
+
+                    int entries = ((int)reloc1.size - 8) / 2;
+
+                    Console.WriteLine("Number of entries: {0}",entries.ToString("X"));
+
+                    for(int i = 0; i < entries; i++)
+                    {
+                       short offset =  Marshal.ReadInt16((firstreloc + 8) + (i * 2));
+
+                        if (offset.ToString("X")[0] == 'A')
+                        {
+                            // IMAGE_REL_BASED_DIR64 10
+
+                            string offset2 = offset.ToString("X").Split('A')[1];
+
+                            Console.WriteLine("Offset: {0}", offset2);
+
+                            byte[] byteoffset2 = Encoding.ASCII.GetBytes(offset2);
+
+                            long temp = Convert.ToInt64(offset2,16);
+
+                            long fullrva = reloc1.pagerva + temp;
+                            Console.WriteLine("Full  RVA: {0}", fullrva.ToString("X"));
+
+                            long value = Marshal.ReadInt64((IntPtr)(baseaddress.ToInt64()+fullrva));
+                            Console.WriteLine("TO BE RELOCATED VALUE: {0}",value.ToString("X"));
+
+                            ulong updatedvalue =(ulong) value +  delta;
+                            Console.WriteLine("updated value: {0}",updatedvalue.ToString("X"));
+                            Marshal.WriteInt64((IntPtr)(baseaddress.ToInt64() + fullrva),(long) updatedvalue);
+                        
+                        }
+                    
+                    }
+
+                    firstreloc += (int)reloc1.size;
+                    reloc1 = (IMAGE_BASE_RELOCATION)Marshal.PtrToStructure(firstreloc, typeof(IMAGE_BASE_RELOCATION));
 
                 }
+
+                #endregion
+
+
+                Console.WriteLine((baseaddress + (int)ntheader.OptionalHeader.AddressOfEntryPoint).ToString("X"));
+                IntPtr threadhandle = IntPtr.Zero;
+                uint threadid = 0;
+                threadhandle = CreateThread(IntPtr.Zero,
+                   (uint) ntheader.OptionalHeader.SizeOfStackCommit,
+                   baseaddress + (int)ntheader.OptionalHeader.AddressOfEntryPoint,
+                   IntPtr.Zero,
+                   0,
+                   ref threadid
+                    );
+                Console.WriteLine("Thread id: {0}", threadid);
+                Console.WriteLine(GetLastError());
+
+                WaitForSingleObject(threadhandle, 0xFFFFFFFF);
+
+
+                foreach(var i in handles)
+                {
+                    FreeLibrary(i);
+                }
+
+                VirtualFree(baseaddress, 0, 0x00008000);
+                br.Close();
+                fs.Close();
+                Console.ReadKey();
+               
             }
-            #endregion
-
-
-
-            Console.WriteLine((baseaddress + (int)ntheader.OptionalHeader.AddressOfEntryPoint).ToString("X"));
-            IntPtr threadhandle = IntPtr.Zero;
-            uint threadid = 0;
-            threadhandle = CreateThread(IntPtr.Zero,
-                0,
-               baseaddress + (int)ntheader.OptionalHeader.AddressOfEntryPoint,
-               IntPtr.Zero,
-               0,
-               ref threadid
-                );
-            Console.WriteLine("Thread id: {0}", threadid);
-             Console.WriteLine(GetLastError());
-
-            WaitForSingleObject(threadhandle, 10000);
-
-            VirtualFree(baseaddress, 0, 0x00008000);
-            br.Close();
-            fs.Close();
-
+            catch { }
            // Console.ReadKey();
         }
     }
