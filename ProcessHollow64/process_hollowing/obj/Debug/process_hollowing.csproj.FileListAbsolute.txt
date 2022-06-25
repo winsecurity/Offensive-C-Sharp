@@ -1,0 +1,6 @@
+C:\Users\stargirl\source\repos\WinAPI\process_hollowing\process_hollowing\bin\Debug\process_hollowing.exe.config
+C:\Users\stargirl\source\repos\WinAPI\process_hollowing\process_hollowing\bin\Debug\process_hollowing.exe
+C:\Users\stargirl\source\repos\WinAPI\process_hollowing\process_hollowing\bin\Debug\process_hollowing.pdb
+C:\Users\stargirl\source\repos\WinAPI\process_hollowing\process_hollowing\obj\Debug\process_hollowing.exe
+C:\Users\stargirl\source\repos\WinAPI\process_hollowing\process_hollowing\obj\Debug\process_hollowing.pdb
+C:\Users\stargirl\source\repos\WinAPI\process_hollowing\process_hollowing\obj\Debug\process_hollowing.csprojAssemblyReference.cache

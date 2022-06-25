@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29318.209
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "process_hollowing", "process_hollowing\process_hollowing.csproj", "{24F8470A-7F69-4516-B1BE-8235DCAEE1AE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{24F8470A-7F69-4516-B1BE-8235DCAEE1AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24F8470A-7F69-4516-B1BE-8235DCAEE1AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24F8470A-7F69-4516-B1BE-8235DCAEE1AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24F8470A-7F69-4516-B1BE-8235DCAEE1AE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D1DD21BB-2A0B-4220-92B8-C91A246F81D0}
+	EndGlobalSection
+EndGlobal
