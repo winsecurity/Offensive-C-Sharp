@@ -28,8 +28,8 @@ namespace ProcessDoppleganging
 
 
         [DllImport("Kernel32.dll", SetLastError = true)]
-        public static extern IntPtr CreateFileTransactedW(
-            string filename,
+        public static extern IntPtr CreateFileTransactedA(
+           string filename,
             UInt32 dwDesiredAccess,
             UInt32 dwShareMode,
             IntPtr lpSecurityAttributes,
