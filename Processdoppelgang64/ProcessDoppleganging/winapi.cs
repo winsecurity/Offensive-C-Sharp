@@ -37,7 +37,7 @@ namespace ProcessDoppleganging
             UInt32 dwFlagsAndAttributes,
             IntPtr hTemplateFile,
             IntPtr hTransaction,
-            UInt16 pusMiniVersion,
+            IntPtr pusMiniVersion,
             IntPtr lpExtendedParameter
             );
 

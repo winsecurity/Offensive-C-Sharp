@@ -44,7 +44,7 @@ namespace ProcessDoppleganging
                 0x80,
                 IntPtr.Zero,
                 thandle,
-                0,
+                IntPtr.Zero,
                 IntPtr.Zero
                 );
 
