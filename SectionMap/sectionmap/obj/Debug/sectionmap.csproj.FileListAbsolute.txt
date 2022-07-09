@@ -1,0 +1,5 @@
+C:\Users\stargirl\source\repos\WinAPI\sectionmap\sectionmap\bin\Debug\sectionmap.exe.config
+C:\Users\stargirl\source\repos\WinAPI\sectionmap\sectionmap\bin\Debug\sectionmap.exe
+C:\Users\stargirl\source\repos\WinAPI\sectionmap\sectionmap\bin\Debug\sectionmap.pdb
+C:\Users\stargirl\source\repos\WinAPI\sectionmap\sectionmap\obj\Debug\sectionmap.exe
+C:\Users\stargirl\source\repos\WinAPI\sectionmap\sectionmap\obj\Debug\sectionmap.pdb
