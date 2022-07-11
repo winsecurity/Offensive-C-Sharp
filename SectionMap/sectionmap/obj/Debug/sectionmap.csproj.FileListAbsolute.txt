@@ -3,3 +3,4 @@ C:\Users\stargirl\source\repos\WinAPI\sectionmap\sectionmap\bin\Debug\sectionmap
 C:\Users\stargirl\source\repos\WinAPI\sectionmap\sectionmap\bin\Debug\sectionmap.pdb
 C:\Users\stargirl\source\repos\WinAPI\sectionmap\sectionmap\obj\Debug\sectionmap.exe
 C:\Users\stargirl\source\repos\WinAPI\sectionmap\sectionmap\obj\Debug\sectionmap.pdb
+C:\Users\stargirl\source\repos\WinAPI\sectionmap\sectionmap\obj\Debug\sectionmap.csprojAssemblyReference.cache
