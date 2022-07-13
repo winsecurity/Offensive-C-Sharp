@@ -1,0 +1,6 @@
+C:\Users\stargirl\source\repos\WinAPI\apcinjection\apcinjection\bin\Debug\apcinjection.exe.config
+C:\Users\stargirl\source\repos\WinAPI\apcinjection\apcinjection\bin\Debug\apcinjection.exe
+C:\Users\stargirl\source\repos\WinAPI\apcinjection\apcinjection\bin\Debug\apcinjection.pdb
+C:\Users\stargirl\source\repos\WinAPI\apcinjection\apcinjection\obj\Debug\apcinjection.exe
+C:\Users\stargirl\source\repos\WinAPI\apcinjection\apcinjection\obj\Debug\apcinjection.pdb
+C:\Users\stargirl\source\repos\WinAPI\apcinjection\apcinjection\obj\Debug\apcinjection.csprojAssemblyReference.cache
