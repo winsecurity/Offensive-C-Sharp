@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29318.209
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "apihashing", "apihashing\apihashing.csproj", "{68C369E0-2C4B-41AF-8207-40ECBD76E003}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{68C369E0-2C4B-41AF-8207-40ECBD76E003}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68C369E0-2C4B-41AF-8207-40ECBD76E003}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68C369E0-2C4B-41AF-8207-40ECBD76E003}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68C369E0-2C4B-41AF-8207-40ECBD76E003}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {975FD9C9-29D0-4D37-B87F-F4A76F797764}
+	EndGlobalSection
+EndGlobal

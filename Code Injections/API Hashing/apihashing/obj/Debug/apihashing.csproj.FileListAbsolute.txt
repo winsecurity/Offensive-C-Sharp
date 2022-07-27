@@ -1,0 +1,6 @@
+C:\Users\stargirl\source\repos\WinAPI\apihashing\apihashing\bin\Debug\apihashing.exe.config
+C:\Users\stargirl\source\repos\WinAPI\apihashing\apihashing\bin\Debug\apihashing.exe
+C:\Users\stargirl\source\repos\WinAPI\apihashing\apihashing\bin\Debug\apihashing.pdb
+C:\Users\stargirl\source\repos\WinAPI\apihashing\apihashing\obj\Debug\apihashing.exe
+C:\Users\stargirl\source\repos\WinAPI\apihashing\apihashing\obj\Debug\apihashing.pdb
+C:\Users\stargirl\source\repos\WinAPI\apihashing\apihashing\obj\Debug\apihashing.csprojAssemblyReference.cache
