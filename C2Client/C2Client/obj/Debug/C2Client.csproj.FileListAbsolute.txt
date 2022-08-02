@@ -5,4 +5,3 @@ C:\Users\stargirl\source\repos\C2Client\C2Client\obj\Debug\C2Client.exe
 C:\Users\stargirl\source\repos\C2Client\C2Client\obj\Debug\C2Client.pdb
 C:\Users\stargirl\source\repos\C2Client\C2Client\bin\Debug\System.Management.Automation.dll
 C:\Users\stargirl\source\repos\C2Client\C2Client\obj\Debug\C2Client.csproj.CopyComplete
-C:\Users\stargirl\source\repos\C2Client\C2Client\obj\Debug\C2Client.csprojAssemblyReference.cache

