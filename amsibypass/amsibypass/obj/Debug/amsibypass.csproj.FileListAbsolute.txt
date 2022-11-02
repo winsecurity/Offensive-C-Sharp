@@ -1,0 +1,5 @@
+C:\Users\stargirl\source\repos\amsibypass\amsibypass\bin\Debug\amsibypass.exe.config
+C:\Users\stargirl\source\repos\amsibypass\amsibypass\bin\Debug\amsibypass.exe
+C:\Users\stargirl\source\repos\amsibypass\amsibypass\bin\Debug\amsibypass.pdb
+C:\Users\stargirl\source\repos\amsibypass\amsibypass\obj\Debug\amsibypass.exe
+C:\Users\stargirl\source\repos\amsibypass\amsibypass\obj\Debug\amsibypass.pdb
