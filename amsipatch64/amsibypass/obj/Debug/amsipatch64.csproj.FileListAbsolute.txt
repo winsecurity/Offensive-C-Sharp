@@ -1,0 +1,12 @@
+C:\Users\stargirl\source\repos\amsibypass\amsibypass\bin\Debug\amsibypass.exe.config
+C:\Users\stargirl\source\repos\amsibypass\amsibypass\bin\Debug\amsibypass.exe
+C:\Users\stargirl\source\repos\amsibypass\amsibypass\bin\Debug\amsibypass.pdb
+C:\Users\stargirl\source\repos\amsibypass\amsibypass\obj\Debug\amsipatch64.csprojAssemblyReference.cache
+C:\Users\stargirl\source\repos\amsibypass\amsibypass\obj\Debug\amsibypass.exe
+C:\Users\stargirl\source\repos\amsibypass\amsibypass\obj\Debug\amsibypass.pdb
+C:\Users\stargirl\source\repos\amsibypass\amsipatch64\amsibypass\bin\Debug\amsibypass.exe.config
+C:\Users\stargirl\source\repos\amsibypass\amsipatch64\amsibypass\bin\Debug\amsibypass.exe
+C:\Users\stargirl\source\repos\amsibypass\amsipatch64\amsibypass\bin\Debug\amsibypass.pdb
+C:\Users\stargirl\source\repos\amsibypass\amsipatch64\amsibypass\obj\Debug\amsipatch64.csprojAssemblyReference.cache
+C:\Users\stargirl\source\repos\amsibypass\amsipatch64\amsibypass\obj\Debug\amsibypass.exe
+C:\Users\stargirl\source\repos\amsibypass\amsipatch64\amsibypass\obj\Debug\amsibypass.pdb

