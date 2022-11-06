@@ -804,7 +804,7 @@ namespace PE64Loader
                         }
                         //IntPtr tempaddr =VirtualAlloc(IntPtr.Add(baseaddress, (int)sh[i].VirtualAddress), (int)sh[i].SizeOfRawData, 0x1000, 0x40);
                         // Console.WriteLine((baseaddress + (int)sh[i].VirtualAddress).ToString("X"));
-                        IntPtr tempptr = VirtualAlloc(IntPtr.Add(baseaddress, (int)sh[i].VirtualAddress), (int) sh[i].SizeOfRawData, 0x1000, 0x40);
+                       // IntPtr tempptr = VirtualAlloc(IntPtr.Add(baseaddress, (int)sh[i].VirtualAddress), (int) sh[i].SizeOfRawData, 0x1000, 0x40);
                         Marshal.Copy(rawfile, (int)sh[i].PointerToRawData, baseaddress +(int)sh[i].VirtualAddress,(int) sh[i].SizeOfRawData);
                     }
                 }
