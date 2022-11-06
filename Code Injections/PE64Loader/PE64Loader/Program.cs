@@ -864,14 +864,14 @@ namespace PE64Loader
                                     Console.WriteLine("Function address: {0}", functionaddress.ToString("X"));
 
                                     Marshal.WriteInt64(firstthunkptr, functionaddress.ToInt64());
+                            firstthunkptr += 8;
 
-                                
                             //}
                             originalfirstthunk += Marshal.SizeOf(typeof(IMAGE_THUNK_DATA64));
                             thunk1 = (IMAGE_THUNK_DATA64)Marshal.PtrToStructure(originalfirstthunk, typeof(IMAGE_THUNK_DATA64));
 
                         }
-                        firstthunkptr += 8;
+                       // firstthunkptr += 8;
                         importptr += Marshal.SizeOf(typeof(IMAGE_IMPORT_DESCRIPTOR));
                         firstimport = (IMAGE_IMPORT_DESCRIPTOR)Marshal.PtrToStructure(importptr, typeof(IMAGE_IMPORT_DESCRIPTOR));
 
