@@ -750,7 +750,7 @@ namespace PE64Loader
                 int imagesize = GetImageSize(rawfile);
 
                 Console.WriteLine("Image size: {0}",imagesize.ToString("x"));
-                Console.ReadKey();
+                //Console.ReadKey();
                 IntPtr baseaddress = VirtualAlloc(IntPtr.Zero, imagesize, 0x00001000, 0x40);
 
                 Console.WriteLine("Memory allocated at: {0}", baseaddress.ToString("X2"));
@@ -871,7 +871,7 @@ namespace PE64Loader
                             thunk1 = (IMAGE_THUNK_DATA64)Marshal.PtrToStructure(originalfirstthunk, typeof(IMAGE_THUNK_DATA64));
 
                         }
-                        firstthunkptr += 4;
+                        firstthunkptr += 8;
                         importptr += Marshal.SizeOf(typeof(IMAGE_IMPORT_DESCRIPTOR));
                         firstimport = (IMAGE_IMPORT_DESCRIPTOR)Marshal.PtrToStructure(importptr, typeof(IMAGE_IMPORT_DESCRIPTOR));
 

@@ -3,4 +3,3 @@ C:\Users\stargirl\source\repos\WinAPI\PE64Loader\PE64Loader\bin\Debug\PE64Loader
 C:\Users\stargirl\source\repos\WinAPI\PE64Loader\PE64Loader\bin\Debug\PE64Loader.pdb
 C:\Users\stargirl\source\repos\WinAPI\PE64Loader\PE64Loader\obj\Debug\PE64Loader.exe
 C:\Users\stargirl\source\repos\WinAPI\PE64Loader\PE64Loader\obj\Debug\PE64Loader.pdb
-C:\Users\stargirl\source\repos\WinAPI\PE64Loader\PE64Loader\obj\Debug\PE64Loader.csprojAssemblyReference.cache
