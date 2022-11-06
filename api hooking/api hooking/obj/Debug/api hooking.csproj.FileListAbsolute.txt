@@ -1,0 +1,6 @@
+C:\Users\stargirl\source\repos\api hooking\api hooking\bin\Debug\api hooking.exe.config
+C:\Users\stargirl\source\repos\api hooking\api hooking\bin\Debug\api hooking.exe
+C:\Users\stargirl\source\repos\api hooking\api hooking\bin\Debug\api hooking.pdb
+C:\Users\stargirl\source\repos\api hooking\api hooking\obj\Debug\api hooking.exe
+C:\Users\stargirl\source\repos\api hooking\api hooking\obj\Debug\api hooking.pdb
+C:\Users\stargirl\source\repos\api hooking\api hooking\obj\Debug\api hooking.csprojAssemblyReference.cache
