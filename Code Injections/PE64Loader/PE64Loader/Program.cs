@@ -526,6 +526,9 @@ namespace PE64Loader
             );
 
 
+
+       
+
         [DllImport("Kernel32.dll")]
         public static extern bool VirtualFree(
             IntPtr lpAddress,
@@ -534,7 +537,7 @@ namespace PE64Loader
             );
 
         [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Ansi)]
-        static extern IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPStr)]string lpFileName);
+        static extern IntPtr LoadLibraryA([MarshalAs(UnmanagedType.LPStr)]string lpFileName);
 
         [DllImport("Kernel32.dll")]
         public static extern IntPtr GetProcAddress(
@@ -574,7 +577,41 @@ namespace PE64Loader
         }
 
 
-        public static string CheckBitVersion(string filepath)
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern bool ReadProcessMemory(
+            IntPtr hProcess,
+            IntPtr lpBaseAddress,
+            [Out] byte[] lpBuffer,
+            int dwSize,
+            out int lpNumberOfBytesRead);
+
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern IntPtr GetCurrentProcess();
+
+        static string ReadProcessMemoryString(IntPtr prochandle, IntPtr baseaddress)
+        {
+            string res = "";
+            int bytesread = 0;
+            byte[] buf = new byte[1];
+            byte[] data = new byte[50];
+            for (int i = 0; i < 50; i++)
+            {
+                ReadProcessMemory(prochandle, baseaddress + i,
+                    buf, 1, out bytesread);
+                data[i] = buf[0];
+                // Console.WriteLine(buf[0]);
+                if (buf[0] == 0)
+                {
+                    if (data.Length == 1) { return res; }
+                    res = Encoding.ASCII.GetString(data);
+                    return res;
+
+                }
+            }
+            return res;
+        }
+            public static string CheckBitVersion(string filepath)
         {
             string bit32 = "32bit";
             string bit64 = "64bit";
@@ -683,8 +720,16 @@ namespace PE64Loader
             {
                 string exe_path;
 
-                exe_path = args[0];
-
+                if (args.Length == 0)
+                {
+                    exe_path = @"D:\red teaming tools\mimikatz.exe";
+                }
+                else {
+                    // exe_path = args[0];
+                    // exe_path = @"D:\red teaming tools\calc2.exe";
+                    exe_path = args[0];
+                }
+               // exe_path = @"D:\red teaming tools\mimikatz.exe";
                 string bit = CheckBitVersion(exe_path);
 
                 Console.WriteLine(bit);
@@ -704,7 +749,8 @@ namespace PE64Loader
 
                 int imagesize = GetImageSize(rawfile);
 
-
+                Console.WriteLine("Image size: {0}",imagesize.ToString("x"));
+                Console.ReadKey();
                 IntPtr baseaddress = VirtualAlloc(IntPtr.Zero, imagesize, 0x00001000, 0x40);
 
                 Console.WriteLine("Memory allocated at: {0}", baseaddress.ToString("X2"));
@@ -741,24 +787,25 @@ namespace PE64Loader
                     Console.WriteLine("Raw offset: {0}", sh[i].PointerToRawData.ToString("X"));
                     Console.WriteLine("Size of raw data: {0}", sh[i].SizeOfRawData.ToString("X"));
                     Console.WriteLine("Virtual Size: {0}", sh[i].VirtualSize.ToString("X"));
-                }
+                
 
                 // mapping sections to memory
-                for (int i = 0; i < sh.Length; i++)
-                {
+               
                     if (sh[i].SizeOfRawData > 0)
                     {
                         uint rawoffset = sh[i].PointerToRawData;
                         Console.WriteLine(rawoffset.ToString("X"));
-                        byte[] temp = new byte[sh[i].VirtualSize];
+                        byte[] temp = new byte[sh[i].SizeOfRawData];
 
                         for (int j = 0; j < temp.Length; j++)
                         {
                             temp[j] = rawfile[j + sh[i].PointerToRawData];
                             //Console.Write(temp[j].ToString("X")+",");
                         }
+                        //IntPtr tempaddr =VirtualAlloc(IntPtr.Add(baseaddress, (int)sh[i].VirtualAddress), (int)sh[i].SizeOfRawData, 0x1000, 0x40);
                         // Console.WriteLine((baseaddress + (int)sh[i].VirtualAddress).ToString("X"));
-                        Marshal.Copy(temp, 0, baseaddress + (int)sh[i].VirtualAddress, temp.Length);
+                        IntPtr tempptr = VirtualAlloc(IntPtr.Add(baseaddress, (int)sh[i].VirtualAddress), (int) sh[i].SizeOfRawData, 0x1000, 0x40);
+                        Marshal.Copy(rawfile, (int)sh[i].PointerToRawData, baseaddress +(int)sh[i].VirtualAddress,(int) sh[i].SizeOfRawData);
                     }
                 }
 
@@ -767,7 +814,7 @@ namespace PE64Loader
 
 
                 List<IntPtr> handles = new List<IntPtr>();
-
+                    
                 #region Fixing IATs
                 //Console.WriteLine("import directory size: {0}", ntheader.OptionalHeader.ImportTable.Size);
                 // fix IAT's only if import directory is not zero
@@ -784,9 +831,9 @@ namespace PE64Loader
                         string dllname = Marshal.PtrToStringAnsi(baseaddress + (int)firstimport.Name);
                         Console.WriteLine("Dll name: {0}", dllname);
 
-                        IntPtr dllhandle = LoadLibrary(dllname);
+                        IntPtr dllhandle = LoadLibraryA(dllname);
 
-                        Console.WriteLine(GetLastError());
+                        //Console.WriteLine(GetLastError());
                         int errorcode = GetLastError();
 
                         IntPtr originalfirstthunk = baseaddress + (int)firstimport.OriginalFirstThunk;
@@ -796,25 +843,30 @@ namespace PE64Loader
                         //IMAGE_THUNK_DATA64 firstthunk = (IMAGE_THUNK_DATA64)Marshal.PtrToStructure(firstthunkptr, typeof(IMAGE_THUNK_DATA64));
                         IMAGE_THUNK_DATA64 thunk1 = (IMAGE_THUNK_DATA64)Marshal.PtrToStructure(originalfirstthunk, typeof(IMAGE_THUNK_DATA64));
 
-                        while (thunk1.Function != 0)
+                        while (thunk1.Function < 0x8000000000000000 && thunk1.Function!=0)
                         {
                             IntPtr name1 = baseaddress + (int)thunk1.Function;
-
-                            string functionname = Marshal.PtrToStringAnsi(name1 + 2);
+                           Console.WriteLine(thunk1.Function.ToString("x"));
+                           // string functionname = Marshal.PtrToStringAnsi(name1 + 2);
+                            string functionname =Marshal.PtrToStringAnsi((IntPtr)(name1 + 2));
                             Console.WriteLine(functionname);
 
-                            if (errorcode == 0)
+                            /*if (functionname == "")
                             {
+                                Console.WriteLine("Empty function name");
+                            }*/
+
+                           // else 
+                            //{
                                 IntPtr functionaddress = GetProcAddress(dllhandle, functionname);
-                                if (GetLastError() == 0)
-                                {
+                                
                                     handles.Add(dllhandle);
                                     Console.WriteLine("Function address: {0}", functionaddress.ToString("X"));
 
                                     Marshal.WriteInt64(firstthunkptr, functionaddress.ToInt64());
 
-                                }
-                            }
+                                
+                            //}
                             originalfirstthunk += Marshal.SizeOf(typeof(IMAGE_THUNK_DATA64));
                             thunk1 = (IMAGE_THUNK_DATA64)Marshal.PtrToStructure(originalfirstthunk, typeof(IMAGE_THUNK_DATA64));
 
@@ -833,7 +885,7 @@ namespace PE64Loader
 
                 #region fixing base relocations
 
-                ulong delta = ((ulong)baseaddress.ToInt64()) - ntheader.OptionalHeader.ImageBase;
+                long delta = ((long)baseaddress.ToInt64()) - (long)  ntheader.OptionalHeader.ImageBase;
 
                 Console.WriteLine("Expected ImageBase: {0}",ntheader.OptionalHeader.ImageBase.ToString("X"));
                 Console.WriteLine("Loaded ImageBase: {0}",baseaddress.ToString("X"));
@@ -844,40 +896,42 @@ namespace PE64Loader
 
                 IMAGE_BASE_RELOCATION reloc1 = (IMAGE_BASE_RELOCATION) Marshal.PtrToStructure(firstreloc, typeof(IMAGE_BASE_RELOCATION));
 
-                while (reloc1.pagerva != 0)
+                while (reloc1.size != 0)
                 {
 
-                    Console.WriteLine("RVA: {0}",reloc1.pagerva.ToString("X"));
-                    Console.WriteLine("size: {0}",reloc1.size.ToString("X"));
+                   // Console.WriteLine("RVA: {0}",reloc1.pagerva.ToString("X"));
+                   // Console.WriteLine("size: {0}",reloc1.size.ToString("X"));
 
                     int entries = ((int)reloc1.size - 8) / 2;
 
-                    Console.WriteLine("Number of entries: {0}",entries.ToString("X"));
+                  //  Console.WriteLine("Number of entries: {0}",entries.ToString("X"));
 
                     for(int i = 0; i < entries; i++)
                     {
-                       short offset =  Marshal.ReadInt16((firstreloc + 8) + (i * 2));
+                        UInt16 offset =  (UInt16)Marshal.ReadInt16(firstreloc, ( 8) + (i * 2));
+                        UInt16 type = (UInt16)( offset>> 12);
+                        UInt16 fix1 = (UInt16)(offset & 0xfff);
 
-                        if (offset.ToString("X")[0] == 'A')
+                        if (type== 0xA)
                         {
                             // IMAGE_REL_BASED_DIR64 10
 
-                            string offset2 = offset.ToString("X").Split('A')[1];
+                           /* string offset2 = offset.ToString("X").Split('A')[1];
 
                             Console.WriteLine("Offset: {0}", offset2);
 
                             byte[] byteoffset2 = Encoding.ASCII.GetBytes(offset2);
 
-                            long temp = Convert.ToInt64(offset2,16);
+                            long temp = Convert.ToInt64(offset2,16);*/
 
-                            long fullrva = reloc1.pagerva + temp;
-                            Console.WriteLine("Full  RVA: {0}", fullrva.ToString("X"));
+                            long fullrva = reloc1.pagerva + fix1; ;
+                           // Console.WriteLine("Full  RVA: {0}", fullrva.ToString("X"));
 
                             long value = Marshal.ReadInt64((IntPtr)(baseaddress.ToInt64()+fullrva));
-                            Console.WriteLine("TO BE RELOCATED VALUE: {0}",value.ToString("X"));
+                           // Console.WriteLine("TO BE RELOCATED VALUE: {0}",value.ToString("X"));
 
-                            ulong updatedvalue =(ulong) value +  delta;
-                            Console.WriteLine("updated value: {0}",updatedvalue.ToString("X"));
+                            long updatedvalue = value +  delta;
+                           // Console.WriteLine("updated value: {0}",updatedvalue.ToString("X"));
                             Marshal.WriteInt64((IntPtr)(baseaddress.ToInt64() + fullrva),(long) updatedvalue);
                         
                         }
@@ -892,22 +946,30 @@ namespace PE64Loader
                 #endregion
 
 
-                Console.WriteLine((baseaddress + (int)ntheader.OptionalHeader.AddressOfEntryPoint).ToString("X"));
-                IntPtr threadhandle = IntPtr.Zero;
-                uint threadid = 0;
-                threadhandle = CreateThread(IntPtr.Zero,
-                   (uint) ntheader.OptionalHeader.SizeOfStackCommit,
-                   baseaddress + (int)ntheader.OptionalHeader.AddressOfEntryPoint,
-                   IntPtr.Zero,
-                   0,
-                   ref threadid
-                    );
-                Console.WriteLine("Thread id: {0}", threadid);
-                Console.WriteLine(GetLastError());
 
-                WaitForSingleObject(threadhandle, 0xFFFFFFFF);
+                try
+                {
+                    Console.WriteLine((baseaddress + (int)ntheader.OptionalHeader.AddressOfEntryPoint).ToString("X"));
+                    IntPtr threadhandle = IntPtr.Zero;
+                    uint threadid = 0;
+                    threadhandle = CreateThread(IntPtr.Zero,
+                       0,
+                       (IntPtr)(baseaddress + (int)ntheader.OptionalHeader.AddressOfEntryPoint),
+                       IntPtr.Zero,
+                       0,
+                       ref threadid
+                        );
 
 
+                    Console.WriteLine("Thread id: {0}", threadid);
+                    Console.WriteLine(GetLastError());
+
+                    WaitForSingleObject(threadhandle, 0xFFFFFFFF);
+
+                   // CloseHandle(threadhandle);
+
+                }
+                catch {  }
                 foreach(var i in handles)
                 {
                     FreeLibrary(i);
@@ -916,10 +978,13 @@ namespace PE64Loader
                 VirtualFree(baseaddress, 0, 0x00008000);
                 br.Close();
                 fs.Close();
-                Console.ReadKey();
+               // Console.ReadKey();
                
             }
-            catch { }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
            // Console.ReadKey();
         }
     }
